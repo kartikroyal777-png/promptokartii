@@ -55,7 +55,7 @@ const HomePage: React.FC = () => {
 
   return (
     <>
-      <div className="w-full min-h-screen overflow-hidden relative flex items-center justify-center pt-20">
+      <div className="w-full min-h-screen overflow-hidden relative flex items-center justify-center pt-28 pb-16 md:pt-20">
         <div className="absolute inset-0 z-0 opacity-50">
           <Orb />
         </div>
@@ -67,10 +67,10 @@ const HomePage: React.FC = () => {
               transition={{ duration: 0.8, ease: "easeOut" }}
               className="text-center lg:text-left"
             >
-              <h1 className="text-5xl md:text-7xl font-extrabold text-dark font-display leading-tight mb-4">
+              <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold text-dark font-display leading-tight mb-4">
                 Seedream<span className="text-accent">Prompts</span>
               </h1>
-              <p className="text-xl md:text-2xl text-slate-600 mb-8">
+              <p className="text-base sm:text-lg md:text-xl text-slate-600 mb-8">
                 Unlock creative AI prompts, one ad at a time.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">

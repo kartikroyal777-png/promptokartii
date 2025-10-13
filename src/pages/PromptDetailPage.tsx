@@ -67,11 +67,11 @@ const PromptDetailPage: React.FC = () => {
   };
 
   if (loading) {
-    return <div className="min-h-screen flex items-center justify-center"><Loader className="animate-spin" /></div>;
+    return <div className="min-h-screen flex items-center justify-center"><Loader className="animate-spin w-8 h-8 text-accent" /></div>;
   }
   
   if (error || !prompt) {
-    return <div className="min-h-screen flex items-center justify-center text-red-500">Error: {error || 'Prompt not found.'}</div>;
+    return <div className="min-h-screen flex items-center justify-center text-red-500 px-4 text-center">Error: {error || 'Prompt not found.'}</div>;
   }
 
   return (
@@ -84,7 +84,7 @@ const PromptDetailPage: React.FC = () => {
         </Button>
         <div className="grid lg:grid-cols-5 gap-8 lg:gap-12">
           <motion.div 
-            className="lg:col-span-3 rounded-xl overflow-hidden shadow-soft-lg"
+            className="lg:col-span-3 rounded-xl overflow-hidden shadow-soft-lg aspect-w-1 aspect-h-1"
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.5 }}
@@ -98,7 +98,7 @@ const PromptDetailPage: React.FC = () => {
               transition={{ duration: 0.5, delay: 0.2 }}
             >
               <span className="inline-block bg-accent/20 text-accent text-sm font-semibold px-3 py-1 rounded-full mb-3">{prompt.category}</span>
-              <h1 className="text-4xl font-extrabold text-dark font-display mb-8">{prompt.title}</h1>
+              <h1 className="text-3xl md:text-4xl font-extrabold text-dark font-display mb-8">{prompt.title}</h1>
               
               {!isUnlocked ? (
                 <div className="p-6 bg-slate-50 rounded-lg text-center">
@@ -116,7 +116,7 @@ const PromptDetailPage: React.FC = () => {
                   <div className="mb-8">
                     <h3 className="text-lg font-bold text-dark mb-3">Prompt Unlocked 🎉</h3>
                     <div className="relative p-4 bg-slate-100 rounded-lg">
-                      <p className="text-slate-700 font-mono text-sm leading-relaxed">{prompt.prompt_text}</p>
+                      <p className="text-slate-700 font-mono text-sm leading-relaxed break-words">{prompt.prompt_text}</p>
                       <button onClick={handleCopy} className="absolute top-2 right-2 p-2 bg-slate-200 rounded-md hover:bg-slate-300 transition-colors">
                         {isCopied ? <Check className="w-4 h-4 text-green-600" /> : <Copy className="w-4 h-4 text-slate-600" />}
                       </button>
@@ -126,7 +126,7 @@ const PromptDetailPage: React.FC = () => {
                   <div>
                     <h3 className="text-lg font-bold text-dark mb-3 flex items-center gap-2"><Info className="w-5 h-5 text-accent"/> Instructions</h3>
                     <div className="p-4 bg-sky-50 border border-sky-100 rounded-lg">
-                      <p className="text-slate-700 leading-relaxed">{prompt.instructions}</p>
+                      <p className="text-slate-700 leading-relaxed break-words">{prompt.instructions}</p>
                     </div>
                   </div>
                 </motion.div>

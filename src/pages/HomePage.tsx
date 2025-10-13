@@ -36,11 +36,11 @@ const HomePage: React.FC = () => {
       setLoading(true);
       const [heroImagesRes, promptsRes] = await Promise.all([
         supabase.from('hero_images').select('*').order('created_at', { ascending: false }).limit(3),
-        supabase.from('prompts').select('*').order('created_at', { ascending: false }).limit(6)
+        supabase.from('prompts').select('*, categories(name)').order('created_at', { ascending: false }).limit(6)
       ]);
 
       if (heroImagesRes.data) setHeroImages(heroImagesRes.data);
-      if (promptsRes.data) setPrompts(promptsRes.data);
+      if (promptsRes.data) setPrompts(promptsRes.data as any[]);
       
       setLoading(false);
     };

@@ -6,16 +6,34 @@ export type Json =
   | { [key: string]: Json | undefined }
   | Json[]
 
-export type PromptCategory = "Men" | "Women" | "Abstract" | "Kids" | "Other"
-
 export interface Database {
   public: {
     Tables: {
+      categories: {
+        Row: {
+          id: number
+          name: string
+          slug: string
+          created_at: string
+        }
+        Insert: {
+          id?: number
+          name: string
+          slug: string
+          created_at?: string
+        }
+        Update: {
+          id?: number
+          name?: string
+          slug?: string
+          created_at?: string
+        }
+      }
       prompts: {
         Row: {
           id: number
           title: string
-          category: PromptCategory
+          category_id: number
           image_url: string
           prompt_text: string
           instructions: string
@@ -25,7 +43,7 @@ export interface Database {
         Insert: {
           id?: number
           title: string
-          category: PromptCategory
+          category_id: number
           image_url: string
           prompt_text: string
           instructions: string
@@ -35,7 +53,7 @@ export interface Database {
         Update: {
           id?: number
           title?: string
-          category?: PromptCategory
+          category_id?: number
           image_url?: string
           prompt_text?: string
           instructions?: string
@@ -71,7 +89,7 @@ export interface Database {
       [_ in never]: never
     }
     Enums: {
-      prompt_category: PromptCategory
+      [_ in never]: never
     }
     CompositeTypes: {
       [_ in never]: never

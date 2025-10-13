@@ -1,12 +1,10 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { supabase } from '../lib/supabase';
-import { Prompt, HeroImage, PromptCategory } from '../types';
+import { Prompt, HeroImage, Category } from '../types';
 import Button from '../components/ui/Button';
 import { Plus, Loader, Trash2, X, Pencil } from 'lucide-react';
 import toast from 'react-hot-toast';
-
-const promptCategories: PromptCategory[] = ['Men', 'Women', 'Abstract', 'Kids', 'Other'];
 
 type AdminTab = 'prompts' | 'hero';
 
@@ -23,12 +21,13 @@ const AdminPage: React.FC = () => {
   const [showHeroForm, setShowHeroForm] = useState(false);
   const [editingHeroImage, setEditingHeroImage] = useState<HeroImage | null>(null);
 
+  const [categories, setCategories] = useState<Category[]>([]);
   const [formLoading, setFormLoading] = useState(false);
 
   const fetchPrompts = useCallback(async () => {
     setLoadingPrompts(true);
-    const { data, error } = await supabase.from('prompts').select('*').order('created_at', { ascending: false });
-    if (error) toast.error(error.message); else setPrompts(data as Prompt[]);
+    const { data, error } = await supabase.from('prompts').select('*, categories(name)').order('created_at', { ascending: false });
+    if (error) toast.error(error.message); else setPrompts(data as any[]); // Cast to any to handle joined type
     setLoadingPrompts(false);
   }, []);
 
@@ -39,10 +38,16 @@ const AdminPage: React.FC = () => {
     setLoadingHeroImages(false);
   }, []);
 
+  const fetchCategories = useCallback(async () => {
+    const { data, error } = await supabase.from('categories').select('*');
+    if (error) toast.error("Could not fetch categories"); else setCategories(data);
+  }, []);
+
   useEffect(() => {
     fetchPrompts();
     fetchHeroImages();
-  }, [fetchPrompts, fetchHeroImages]);
+    fetchCategories();
+  }, [fetchPrompts, fetchHeroImages, fetchCategories]);
   
   const handleEditPrompt = (prompt: Prompt) => {
     setEditingPrompt(prompt);
@@ -98,15 +103,12 @@ const AdminPage: React.FC = () => {
     fetchHeroImages();
   };
 
-  const handleTogglePromptForm = () => {
-    setShowPromptForm(!showPromptForm);
-    setEditingPrompt(null); // Reset editing state when toggling
-  };
-
-  const handleToggleHeroForm = () => {
-    setShowHeroForm(!showHeroForm);
-    setEditingHeroImage(null); // Reset editing state when toggling
-  };
+  const handleCloseForms = () => {
+    setShowPromptForm(false);
+    setEditingPrompt(null);
+    setShowHeroForm(false);
+    setEditingHeroImage(null);
+  }
 
   return (
     <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-28">
@@ -125,9 +127,9 @@ const AdminPage: React.FC = () => {
           title="Prompts"
           loading={loadingPrompts}
           showForm={showPromptForm}
-          onToggleForm={handleTogglePromptForm}
+          onToggleForm={() => { setShowPromptForm(!showPromptForm); setEditingPrompt(null); }}
           isEditing={!!editingPrompt}
-          renderForm={() => <PromptForm setFormLoading={setFormLoading} formLoading={formLoading} promptToEdit={editingPrompt} onComplete={() => { fetchPrompts(); setShowPromptForm(false); setEditingPrompt(null); }} />}
+          renderForm={() => <PromptForm categories={categories} setFormLoading={setFormLoading} formLoading={formLoading} promptToEdit={editingPrompt} onComplete={handleCloseForms} />}
           renderTable={() => (
             <PromptsTable prompts={prompts} onEdit={handleEditPrompt} onDelete={handleDeletePrompt} />
           )}
@@ -139,9 +141,9 @@ const AdminPage: React.FC = () => {
           title="Hero Images"
           loading={loadingHeroImages}
           showForm={showHeroForm}
-          onToggleForm={handleToggleHeroForm}
+          onToggleForm={() => { setShowHeroForm(!showHeroForm); setEditingHeroImage(null); }}
           isEditing={!!editingHeroImage}
-          renderForm={() => <HeroImageForm setFormLoading={setFormLoading} formLoading={formLoading} heroImageToEdit={editingHeroImage} onComplete={() => { fetchHeroImages(); setShowHeroForm(false); setEditingHeroImage(null); }} />}
+          renderForm={() => <HeroImageForm setFormLoading={setFormLoading} formLoading={formLoading} heroImageToEdit={editingHeroImage} onComplete={handleCloseForms} />}
           renderTable={() => (
             <HeroImagesTable heroImages={heroImages} onEdit={handleEditHeroImage} onDelete={handleDeleteHeroImage} />
           )}
@@ -180,15 +182,16 @@ const AdminSection = ({ title, loading, showForm, onToggleForm, isEditing, rende
 );
 
 interface PromptFormProps {
+  categories: Category[];
   setFormLoading: (loading: boolean) => void;
   formLoading: boolean;
   onComplete: () => void;
   promptToEdit: Prompt | null;
 }
 
-const PromptForm = ({ setFormLoading, formLoading, onComplete, promptToEdit }: PromptFormProps) => {
+const PromptForm = ({ categories, setFormLoading, formLoading, onComplete, promptToEdit }: PromptFormProps) => {
   const [title, setTitle] = useState('');
-  const [category, setCategory] = useState<PromptCategory>('Other');
+  const [categoryId, setCategoryId] = useState<number | undefined>(undefined);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [promptText, setPromptText] = useState('');
   const [instructions, setInstructions] = useState('');
@@ -196,24 +199,28 @@ const PromptForm = ({ setFormLoading, formLoading, onComplete, promptToEdit }: P
   useEffect(() => {
     if (promptToEdit) {
       setTitle(promptToEdit.title);
-      setCategory(promptToEdit.category);
+      setCategoryId(promptToEdit.category_id);
       setPromptText(promptToEdit.prompt_text);
       setInstructions(promptToEdit.instructions);
       setImageFile(null);
     } else {
       // Reset form when adding new
       setTitle('');
-      setCategory('Other');
+      setCategoryId(categories.length > 0 ? categories[0].id : undefined);
       setPromptText('');
       setInstructions('');
       setImageFile(null);
     }
-  }, [promptToEdit]);
+  }, [promptToEdit, categories]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!imageFile && !promptToEdit) {
       toast.error('Please select an image file.');
+      return;
+    }
+    if (categoryId === undefined) {
+      toast.error('Please select a category.');
       return;
     }
     setFormLoading(true);
@@ -229,8 +236,7 @@ const PromptForm = ({ setFormLoading, formLoading, onComplete, promptToEdit }: P
     let imageUrl = promptToEdit?.image_url || '';
 
     if (imageFile) {
-      // If there's an old image and we're uploading a new one, delete the old one.
-      if (promptToEdit) {
+      if (promptToEdit?.image_url) {
         const oldFilePath = promptToEdit.image_url.split('/prompt-images/')[1];
         if (oldFilePath) {
           await supabase.storage.from('prompt-images').remove([oldFilePath]);
@@ -246,7 +252,7 @@ const PromptForm = ({ setFormLoading, formLoading, onComplete, promptToEdit }: P
       imageUrl = supabase.storage.from('prompt-images').getPublicUrl(uploadData.path).data.publicUrl;
     }
     
-    const promptData = { title, category, image_url: imageUrl, prompt_text: promptText, instructions, created_by: user.id };
+    const promptData = { title, category_id: categoryId, image_url: imageUrl, prompt_text: promptText, instructions, created_by: user.id };
 
     if (promptToEdit) {
       const { error } = await supabase.from('prompts').update(promptData).eq('id', promptToEdit.id);
@@ -273,8 +279,17 @@ const PromptForm = ({ setFormLoading, formLoading, onComplete, promptToEdit }: P
       <h3 className="text-xl md:text-2xl font-bold text-dark">{promptToEdit ? 'Edit Prompt' : 'Add New Prompt'}</h3>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <input type="text" placeholder="Title" value={title} onChange={e => setTitle(e.target.value)} required className="w-full p-3 border border-light rounded-lg"/>
-        <select value={category} onChange={e => setCategory(e.target.value as PromptCategory)} required className="w-full p-3 border border-light rounded-lg bg-white">
-          {promptCategories.map(cat => <option key={cat}>{cat}</option>)}
+        <select 
+          value={categoryId === undefined ? '' : categoryId} 
+          onChange={e => setCategoryId(e.target.value ? Number(e.target.value) : undefined)}
+          required 
+          disabled={categories.length === 0}
+          className="w-full p-3 border border-light rounded-lg bg-white disabled:bg-slate-100"
+        >
+          <option value="" disabled>
+            {categories.length === 0 ? 'No categories available' : 'Select a category'}
+          </option>
+          {categories.map(cat => <option key={cat.id} value={cat.id}>{cat.name}</option>)}
         </select>
       </div>
       <input type="file" accept="image/*" onChange={e => e.target.files && setImageFile(e.target.files[0])} required={!promptToEdit} className="w-full p-3 border border-light rounded-lg file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-accent/20 file:text-accent hover:file:bg-accent/30"/>
@@ -284,7 +299,7 @@ const PromptForm = ({ setFormLoading, formLoading, onComplete, promptToEdit }: P
         <Button type="submit" disabled={formLoading}>
           {formLoading ? 'Saving...' : 'Save Changes'}
         </Button>
-        <Button variant="outline" onClick={onComplete} disabled={formLoading}>Cancel</Button>
+        <Button variant="outline" type="button" onClick={onComplete} disabled={formLoading}>Cancel</Button>
       </div>
     </form>
   );
@@ -309,7 +324,7 @@ const PromptsTable = ({ prompts, onEdit, onDelete }: { prompts: Prompt[], onEdit
                 <div className="ml-4"><div className="text-sm font-medium text-dark">{prompt.title}</div></div>
               </div>
             </td>
-            <td className="px-6 py-4 whitespace-nowrap hidden sm:table-cell"><span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-accent/20 text-accent">{prompt.category}</span></td>
+            <td className="px-6 py-4 whitespace-nowrap hidden sm:table-cell"><span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-accent/20 text-accent">{prompt.categories?.name}</span></td>
             <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium flex justify-end items-center gap-4">
               <button onClick={() => onEdit(prompt)} className="text-slate-600 hover:text-accent"><Pencil size={18}/></button>
               <button onClick={() => onDelete(prompt.id, prompt.image_url)} className="text-red-600 hover:text-red-900"><Trash2 size={18}/></button>
@@ -354,7 +369,7 @@ const HeroImageForm = ({ setFormLoading, formLoading, onComplete, heroImageToEdi
     let imageUrl = heroImageToEdit?.image_url || '';
 
     if (imageFile) {
-      if (heroImageToEdit) {
+      if (heroImageToEdit?.image_url) {
         const oldFilePath = heroImageToEdit.image_url.split('/prompt-images/')[1];
         if (oldFilePath) {
           await supabase.storage.from('prompt-images').remove([oldFilePath]);
@@ -393,7 +408,7 @@ const HeroImageForm = ({ setFormLoading, formLoading, onComplete, heroImageToEdi
         <Button type="submit" disabled={formLoading}>
           {formLoading ? 'Saving...' : 'Save Changes'}
         </Button>
-         <Button variant="outline" onClick={onComplete} disabled={formLoading}>Cancel</Button>
+         <Button variant="outline" type="button" onClick={onComplete} disabled={formLoading}>Cancel</Button>
       </div>
     </form>
   );

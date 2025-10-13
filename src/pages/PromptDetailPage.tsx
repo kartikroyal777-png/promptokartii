@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import confetti from 'canvas-confetti';
 import { supabase } from '../lib/supabase';
 import { Prompt } from '../types';
@@ -14,6 +14,7 @@ const PromptDetailPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isUnlocked, setIsUnlocked] = useState(false);
+  const [isUnlocking, setIsUnlocking] = useState(false);
   const [isCopied, setIsCopied] = useState(false);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -23,7 +24,7 @@ const PromptDetailPage: React.FC = () => {
       setLoading(true);
       const { data, error } = await supabase
         .from('prompts')
-        .select('*')
+        .select('*, categories(name)')
         .eq('id', id)
         .single();
       
@@ -31,7 +32,7 @@ const PromptDetailPage: React.FC = () => {
         setError(error.message);
         console.error('Error fetching prompt:', error);
       } else {
-        setPrompt(data as Prompt);
+        setPrompt(data as any);
       }
       setLoading(false);
     };
@@ -41,9 +42,11 @@ const PromptDetailPage: React.FC = () => {
 
   const handleUnlock = () => {
     // In a real app, this would trigger AdGem.showOfferWall()
+    setIsUnlocking(true);
     console.log("Simulating ad watch...");
     setTimeout(() => {
       setIsUnlocked(true);
+      setIsUnlocking(false);
       if (canvasRef.current) {
         const myConfetti = confetti.create(canvasRef.current, {
           resize: true,
@@ -67,7 +70,7 @@ const PromptDetailPage: React.FC = () => {
   };
 
   if (loading) {
-    return <div className="min-h-screen flex items-center justify-center"><Loader className="animate-spin w-8 h-8 text-accent" /></div>;
+    return <div className="min-h-screen flex items-center justify-center"><Loader className="animate-spin w-10 h-10 text-accent" /></div>;
   }
   
   if (error || !prompt) {
@@ -97,40 +100,54 @@ const PromptDetailPage: React.FC = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.2 }}
             >
-              <span className="inline-block bg-accent/20 text-accent text-sm font-semibold px-3 py-1 rounded-full mb-3">{prompt.category}</span>
+              <span className="inline-block bg-accent/20 text-accent text-sm font-semibold px-3 py-1 rounded-full mb-3">{prompt.categories?.name}</span>
               <h1 className="text-3xl md:text-4xl font-extrabold text-dark font-display mb-8">{prompt.title}</h1>
               
-              {!isUnlocked ? (
-                <div className="p-6 bg-slate-50 rounded-lg text-center">
-                  <h2 className="text-xl font-bold text-dark mb-4">Unlock this Prompt</h2>
-                  <p className="text-slate-600 mb-6">Watch a short ad to reveal the full prompt and instructions for free.</p>
-                  <Button onClick={handleUnlock} variant="primary" className="w-full" icon={<Gift />}>
-                    Watch Ad to Unlock Prompt
-                  </Button>
-                </div>
-              ) : (
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                >
-                  <div className="mb-8">
-                    <h3 className="text-lg font-bold text-dark mb-3">Prompt Unlocked 🎉</h3>
-                    <div className="relative p-4 bg-slate-100 rounded-lg">
-                      <p className="text-slate-700 font-mono text-sm leading-relaxed break-words">{prompt.prompt_text}</p>
-                      <button onClick={handleCopy} className="absolute top-2 right-2 p-2 bg-slate-200 rounded-md hover:bg-slate-300 transition-colors">
-                        {isCopied ? <Check className="w-4 h-4 text-green-600" /> : <Copy className="w-4 h-4 text-slate-600" />}
-                      </button>
+              <AnimatePresence mode="wait">
+                {!isUnlocked ? (
+                  <motion.div
+                    key="locked"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="p-6 bg-slate-50 rounded-lg text-center"
+                  >
+                    <h2 className="text-xl font-bold text-dark mb-4">Unlock this Prompt</h2>
+                    <p className="text-slate-600 mb-6">Watch a short ad to reveal the full prompt and instructions for free.</p>
+                    <Button onClick={handleUnlock} variant="primary" className="w-full" icon={isUnlocking ? <Loader className="animate-spin w-5 h-5"/> : <Gift />} disabled={isUnlocking}>
+                      {isUnlocking ? 'Unlocking...' : 'Watch Ad to Unlock Prompt'}
+                    </Button>
+                  </motion.div>
+                ) : (
+                  <motion.div
+                    key="unlocked"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                  >
+                    <div className="mb-8">
+                      <h3 className="text-xl font-bold text-dark mb-3">Prompt Unlocked 🎉</h3>
+                      <div className="relative p-4 bg-slate-100 rounded-lg border border-slate-200">
+                        <p className="text-slate-700 font-mono text-sm leading-relaxed break-words">{prompt.prompt_text}</p>
+                        <button onClick={handleCopy} className="absolute top-2 right-2 p-2 bg-slate-200 rounded-md hover:bg-slate-300 transition-colors">
+                          <AnimatePresence mode="wait">
+                            {isCopied ? 
+                              <motion.div key="check" initial={{scale:0.5, opacity:0}} animate={{scale:1, opacity:1}} exit={{scale:0.5, opacity:0}}><Check className="w-4 h-4 text-green-600" /></motion.div> : 
+                              <motion.div key="copy" initial={{scale:0.5, opacity:0}} animate={{scale:1, opacity:1}} exit={{scale:0.5, opacity:0}}><Copy className="w-4 h-4 text-slate-600" /></motion.div>
+                            }
+                          </AnimatePresence>
+                        </button>
+                      </div>
                     </div>
-                  </div>
-                  
-                  <div>
-                    <h3 className="text-lg font-bold text-dark mb-3 flex items-center gap-2"><Info className="w-5 h-5 text-accent"/> Instructions</h3>
-                    <div className="p-4 bg-sky-50 border border-sky-100 rounded-lg">
-                      <p className="text-slate-700 leading-relaxed break-words">{prompt.instructions}</p>
+                    
+                    <div>
+                      <h3 className="text-lg font-bold text-dark mb-3 flex items-center gap-2"><Info className="w-5 h-5 text-accent"/> Instructions</h3>
+                      <div className="p-4 bg-sky-50 border border-sky-100 rounded-lg">
+                        <p className="text-slate-700 leading-relaxed break-words whitespace-pre-wrap">{prompt.instructions}</p>
+                      </div>
                     </div>
-                  </div>
-                </motion.div>
-              )}
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </motion.div>
           </div>
         </div>

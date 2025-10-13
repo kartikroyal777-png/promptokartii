@@ -1,14 +1,21 @@
-export type PromptCategory = 'Men' | 'Women' | 'Abstract' | 'Kids' | 'Other';
+export interface Category {
+  id: number;
+  name: string;
+  slug: string;
+}
 
 export interface Prompt {
   id: number;
   title: string;
-  category: PromptCategory;
+  category_id: number;
   image_url: string;
   prompt_text: string;
   instructions: string;
   created_at: string;
   created_by: string;
+  categories: {
+    name: string;
+  } | null;
 }
 
 export interface HeroImage {

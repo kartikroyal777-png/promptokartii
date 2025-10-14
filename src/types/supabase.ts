@@ -31,7 +31,7 @@ export interface Database {
       }
       prompts: {
         Row: {
-          id: number
+          id: string
           title: string
           category_id: number
           image_url: string
@@ -41,7 +41,7 @@ export interface Database {
           created_at: string
         }
         Insert: {
-          id?: number
+          id?: string
           title: string
           category_id: number
           image_url: string
@@ -51,7 +51,7 @@ export interface Database {
           created_at?: string
         }
         Update: {
-          id?: number
+          id?: string
           title?: string
           category_id?: number
           image_url?: string
@@ -79,6 +79,35 @@ export interface Database {
           image_url?: string
           alt_text?: string
           created_at?: string
+        }
+      }
+      ad_views: {
+        Row: {
+          id: string
+          user_id: string
+          prompt_id: string
+          payout: number | null
+          country: string | null
+          offer_id: string | null
+          completed_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          prompt_id: string
+          payout?: number | null
+          country?: string | null
+          offer_id?: string | null
+          completed_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          prompt_id?: string
+          payout?: number | null
+          country?: string | null
+          offer_id?: string | null
+          completed_at?: string
         }
       }
     }

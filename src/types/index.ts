@@ -5,7 +5,7 @@ export interface Category {
 }
 
 export interface Prompt {
-  id: number;
+  id: string;
   title: string;
   category_id: number;
   image_url: string;
@@ -23,4 +23,11 @@ export interface HeroImage {
   image_url: string;
   alt_text: string;
   created_at: string;
+}
+
+export interface AdView {
+  id: string;
+  user_id: string;
+  prompt_id: string;
+  completed_at: string;
 }

@@ -1,12 +1,12 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { supabase } from '../lib/supabase';
-import { Prompt, HeroImage, Category } from '../types';
+import { Prompt, HeroImage, Category, AdView } from '../types';
 import Button from '../components/ui/Button';
-import { Plus, Loader, Trash2, X, Pencil } from 'lucide-react';
+import { Plus, Loader, Trash2, X, Pencil, DollarSign, Eye } from 'lucide-react';
 import toast from 'react-hot-toast';
 
-type AdminTab = 'prompts' | 'hero';
+type AdminTab = 'prompts' | 'hero' | 'analytics';
 
 const AdminPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<AdminTab>('prompts');
@@ -27,7 +27,7 @@ const AdminPage: React.FC = () => {
   const fetchPrompts = useCallback(async () => {
     setLoadingPrompts(true);
     const { data, error } = await supabase.from('prompts').select('*, categories(name)').order('created_at', { ascending: false });
-    if (error) toast.error(error.message); else setPrompts(data as any[]); // Cast to any to handle joined type
+    if (error) toast.error(error.message); else setPrompts(data as any[]);
     setLoadingPrompts(false);
   }, []);
 
@@ -59,7 +59,7 @@ const AdminPage: React.FC = () => {
     setShowHeroForm(true);
   };
 
-  const handleDeletePrompt = async (promptId: number, imageUrl: string) => {
+  const handleDeletePrompt = async (promptId: string, imageUrl: string) => {
     if (!window.confirm('Are you sure you want to delete this prompt?')) return;
     const toastId = toast.loading('Deleting prompt...');
     
@@ -110,6 +110,16 @@ const AdminPage: React.FC = () => {
     setEditingHeroImage(null);
   }
 
+  const handlePromptFormComplete = () => {
+    handleCloseForms();
+    fetchPrompts();
+  }
+
+  const handleHeroFormComplete = () => {
+    handleCloseForms();
+    fetchHeroImages();
+  }
+
   return (
     <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-28">
       <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="mb-12">
@@ -120,6 +130,7 @@ const AdminPage: React.FC = () => {
       <div className="flex border-b border-light mb-8 flex-wrap">
         <TabButton name="Manage Prompts" tab="prompts" activeTab={activeTab} setActiveTab={setActiveTab} />
         <TabButton name="Manage Hero Images" tab="hero" activeTab={activeTab} setActiveTab={setActiveTab} />
+        <TabButton name="Analytics" tab="analytics" activeTab={activeTab} setActiveTab={setActiveTab} />
       </div>
 
       {activeTab === 'prompts' && (
@@ -129,7 +140,7 @@ const AdminPage: React.FC = () => {
           showForm={showPromptForm}
           onToggleForm={() => { setShowPromptForm(!showPromptForm); setEditingPrompt(null); }}
           isEditing={!!editingPrompt}
-          renderForm={() => <PromptForm categories={categories} setFormLoading={setFormLoading} formLoading={formLoading} promptToEdit={editingPrompt} onComplete={handleCloseForms} />}
+          renderForm={() => <PromptForm categories={categories} setFormLoading={setFormLoading} formLoading={formLoading} promptToEdit={editingPrompt} onComplete={handlePromptFormComplete} />}
           renderTable={() => (
             <PromptsTable prompts={prompts} onEdit={handleEditPrompt} onDelete={handleDeletePrompt} />
           )}
@@ -143,11 +154,15 @@ const AdminPage: React.FC = () => {
           showForm={showHeroForm}
           onToggleForm={() => { setShowHeroForm(!showHeroForm); setEditingHeroImage(null); }}
           isEditing={!!editingHeroImage}
-          renderForm={() => <HeroImageForm setFormLoading={setFormLoading} formLoading={formLoading} heroImageToEdit={editingHeroImage} onComplete={handleCloseForms} />}
+          renderForm={() => <HeroImageForm setFormLoading={setFormLoading} formLoading={formLoading} heroImageToEdit={editingHeroImage} onComplete={handleHeroFormComplete} />}
           renderTable={() => (
             <HeroImagesTable heroImages={heroImages} onEdit={handleEditHeroImage} onDelete={handleDeleteHeroImage} />
           )}
         />
+      )}
+
+      {activeTab === 'analytics' && (
+        <AnalyticsSection />
       )}
     </div>
   );
@@ -180,6 +195,61 @@ const AdminSection = ({ title, loading, showForm, onToggleForm, isEditing, rende
     {loading ? <div className="text-center py-10"><Loader className="animate-spin mx-auto text-accent" /></div> : renderTable()}
   </motion.div>
 );
+
+const AnalyticsSection = () => {
+  const [adViews, setAdViews] = useState<AdView[]>([]);
+  const [loading, setLoading] = useState(true);
+  const AVG_PAYOUT = 0.05; // Placeholder average payout per view in USD
+
+  useEffect(() => {
+    const fetchAdViews = async () => {
+      setLoading(true);
+      const { data, error } = await supabase.from('ad_views').select('*');
+      if (error) {
+        toast.error('Could not fetch analytics data.');
+        console.error(error);
+      } else {
+        setAdViews(data as any[]);
+      }
+      setLoading(false);
+    };
+    fetchAdViews();
+  }, []);
+
+  const totalViews = adViews.length;
+  const estimatedEarnings = adViews.reduce((sum, view) => sum + (view.payout || AVG_PAYOUT), 0);
+
+  if (loading) {
+    return <div className="text-center py-10"><Loader className="animate-spin mx-auto text-accent" /></div>;
+  }
+
+  return (
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+      <h2 className="text-2xl md:text-3xl font-bold text-dark font-display mb-6">Analytics</h2>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="bg-white p-6 rounded-xl shadow-soft flex items-center gap-6">
+          <div className="bg-sky-100 p-4 rounded-full">
+            <Eye className="w-8 h-8 text-sky-500" />
+          </div>
+          <div>
+            <p className="text-slate-500 text-sm">Total Ad Completions</p>
+            <p className="text-3xl font-bold text-dark">{totalViews}</p>
+          </div>
+        </div>
+        <div className="bg-white p-6 rounded-xl shadow-soft flex items-center gap-6">
+          <div className="bg-green-100 p-4 rounded-full">
+            <DollarSign className="w-8 h-8 text-green-500" />
+          </div>
+          <div>
+            <p className="text-slate-500 text-sm">Estimated Earnings</p>
+            <p className="text-3xl font-bold text-dark">${estimatedEarnings.toFixed(2)}</p>
+          </div>
+        </div>
+      </div>
+    </motion.div>
+  );
+};
+
 
 interface PromptFormProps {
   categories: Category[];
@@ -305,7 +375,7 @@ const PromptForm = ({ categories, setFormLoading, formLoading, onComplete, promp
   );
 };
 
-const PromptsTable = ({ prompts, onEdit, onDelete }: { prompts: Prompt[], onEdit: (p: Prompt) => void, onDelete: (id: number, url: string) => void }) => (
+const PromptsTable = ({ prompts, onEdit, onDelete }: { prompts: Prompt[], onEdit: (p: Prompt) => void, onDelete: (id: string, url: string) => void }) => (
   <div className="bg-white rounded-xl shadow-soft overflow-x-auto">
     <table className="min-w-full divide-y divide-light">
       <thead className="bg-slate-50">

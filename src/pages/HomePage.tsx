@@ -39,7 +39,17 @@ const HomePage: React.FC = () => {
         supabase.from('prompts').select('*, categories(name)').order('created_at', { ascending: false }).limit(6)
       ]);
 
-      if (heroImagesRes.data) setHeroImages(heroImagesRes.data);
+      if (heroImagesRes.data && heroImagesRes.data.length > 0) {
+        setHeroImages(heroImagesRes.data);
+      } else {
+        // Set placeholder images if none are found
+        setHeroImages([
+          { id: 1, image_url: 'https://img-wrapper.vercel.app/image?url=https://placehold.co/400x600/38bdf8/ffffff?text=Style', alt_text: 'Placeholder hero image 1', created_at: new Date().toISOString() },
+          { id: 2, image_url: 'https://img-wrapper.vercel.app/image?url=https://placehold.co/600x400/0f172a/ffffff?text=Art', alt_text: 'Placeholder hero image 2', created_at: new Date().toISOString() },
+          { id: 3, image_url: 'https://img-wrapper.vercel.app/image?url=https://placehold.co/400x600/e2e8f0/0f172a?text=Creative', alt_text: 'Placeholder hero image 3', created_at: new Date().toISOString() },
+        ]);
+      }
+
       if (promptsRes.data) setPrompts(promptsRes.data as any[]);
       
       setLoading(false);

@@ -4,7 +4,6 @@ import PromptCard from '../components/PromptCard';
 import { supabase } from '../lib/supabase';
 import { Prompt, Category } from '../types';
 import { Loader } from 'lucide-react';
-import VideoSliderAd from '../components/VideoSliderAd';
 
 const PromptsPage: React.FC = () => {
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
@@ -107,7 +106,6 @@ const PromptsPage: React.FC = () => {
           </AnimatePresence>
         </motion.div>
       )}
-      <VideoSliderAd />
     </div>
   );
 };

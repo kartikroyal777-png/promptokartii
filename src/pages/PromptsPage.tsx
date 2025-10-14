@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import PromptCard from '../components/PromptCard';
 import { supabase } from '../lib/supabase';
 import { Prompt, Category } from '../types';
-import { Loader } from 'lucide-react';
+import { Loader, AlertTriangle } from 'lucide-react';
 
 const PromptsPage: React.FC = () => {
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
@@ -17,26 +17,26 @@ const PromptsPage: React.FC = () => {
       setLoading(true);
       setError(null);
       
-      const [promptsRes, categoriesRes] = await Promise.all([
-        supabase.from('prompts').select('*, categories(name)').order('created_at', { ascending: false }),
-        supabase.from('categories').select('*').order('name', { ascending: true })
-      ]);
+      try {
+        const [promptsRes, categoriesRes] = await Promise.all([
+          supabase.from('prompts').select('*, categories(name)').order('created_at', { ascending: false }),
+          supabase.from('categories').select('*').order('name', { ascending: true })
+        ]);
 
-      if (promptsRes.error) {
-        setError(promptsRes.error.message);
-        console.error('Error fetching prompts:', promptsRes.error);
-      } else {
+        if (promptsRes.error) throw promptsRes.error;
         setPrompts(promptsRes.data as any[]);
-      }
 
-      if (categoriesRes.error) {
-        // Not a fatal error for the page, but good to know
-        console.error('Error fetching categories:', categoriesRes.error);
-      } else {
-        setCategories(categoriesRes.data);
+        if (categoriesRes.error) {
+          console.warn('Could not fetch categories:', categoriesRes.error.message);
+        } else {
+          setCategories(categoriesRes.data);
+        }
+      } catch (err: any) {
+        console.error('Error fetching data:', err);
+        setError("Could not load data. This might be due to a network issue or a browser extension (like an ad blocker) interfering with the connection. Please check your connection and try again.");
+      } finally {
+        setLoading(false);
       }
-
-      setLoading(false);
     };
 
     fetchData();
@@ -85,7 +85,14 @@ const PromptsPage: React.FC = () => {
       </div>
       
       {loading && <div className="text-center py-10"><Loader className="w-8 h-8 animate-spin text-accent mx-auto" /></div>}
-      {error && <div className="text-center py-10 text-red-500">Error: {error}</div>}
+      
+      {error && (
+        <div className="text-center py-10 text-red-500 bg-red-50 border border-red-200 rounded-lg p-6 max-w-2xl mx-auto">
+          <AlertTriangle className="w-10 h-10 mx-auto mb-4" />
+          <h3 className="font-bold text-lg mb-2">Connection Error</h3>
+          <p>{error}</p>
+        </div>
+      )}
 
       {!loading && !error && (
         <motion.div layout className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">

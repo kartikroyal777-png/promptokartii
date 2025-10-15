@@ -1,14 +1,20 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Link } from 'react-router-dom';
 import { Sparkles } from 'lucide-react';
 import { Prompt } from '../types';
+import { useAd } from '../contexts/AdContext';
 
 interface PromptCardProps {
   prompt: Prompt;
 }
 
 const PromptCard: React.FC<PromptCardProps> = ({ prompt }) => {
+  const { showAd } = useAd();
+
+  const handleUnlock = () => {
+    showAd(`/prompt/${prompt.id}`, prompt.id);
+  };
+
   return (
     <motion.div
       layout
@@ -25,12 +31,15 @@ const PromptCard: React.FC<PromptCardProps> = ({ prompt }) => {
         <h3 className="text-xl font-bold font-display">{prompt.title}</h3>
       </div>
       <div className="absolute inset-0 bg-black/80 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-        <Link to={`/prompt/${prompt.id}`} className="transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
-          <button className="flex items-center gap-2 px-6 py-3 bg-accent text-white font-semibold rounded-lg shadow-lg hover:bg-sky-500 transition-colors">
+        <div className="transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
+          <button 
+            onClick={handleUnlock}
+            className="flex items-center gap-2 px-6 py-3 bg-accent text-white font-semibold rounded-lg shadow-lg hover:bg-sky-500 transition-colors"
+          >
             <Sparkles className="w-5 h-5" />
             Unlock Free
           </button>
-        </Link>
+        </div>
       </div>
     </motion.div>
   );

@@ -10,6 +10,7 @@ import PromptDetailPage from './pages/PromptDetailPage';
 import LoginPage from './pages/LoginPage';
 import AdminPage from './pages/AdminPage';
 import ProtectedRoute from './components/ProtectedRoute';
+import { useAd } from './contexts/AdContext';
 
 const pageVariants = {
   initial: {

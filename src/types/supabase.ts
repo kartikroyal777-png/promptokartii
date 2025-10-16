@@ -9,106 +9,210 @@ export type Json =
 export interface Database {
   public: {
     Tables: {
+      app_config: {
+        Row: {
+          config_key: string
+          config_value: string
+          id: number
+        }
+        Insert: {
+          config_key: string
+          config_value: string
+          id?: number
+        }
+        Update: {
+          config_key?: string
+          config_value?: string
+          id?: number
+        }
+        Relationships: []
+      }
       categories: {
         Row: {
+          created_at: string
           id: number
           name: string
           slug: string
-          created_at: string
         }
         Insert: {
+          created_at?: string
           id?: number
           name: string
           slug: string
-          created_at?: string
         }
         Update: {
+          created_at?: string
           id?: number
           name?: string
           slug?: string
-          created_at?: string
         }
+        Relationships: []
       }
-      prompts: {
+      daily_ad_claims: {
         Row: {
-          id: string
-          title: string
-          category_id: number
-          image_url: string
-          prompt_text: string
-          instructions: string
-          created_by: string
-          created_at: string
+          claim_date: string
+          claimed_at: string
+          id: number
+          reward_slot: number
+          user_id: string
         }
         Insert: {
-          id?: string
-          title: string
-          category_id: number
-          image_url: string
-          prompt_text: string
-          instructions: string
-          created_by: string
-          created_at?: string
+          claim_date?: string
+          claimed_at?: string
+          id?: number
+          reward_slot: number
+          user_id: string
         }
         Update: {
-          id?: string
-          title?: string
-          category_id?: number
-          image_url?: string
-          prompt_text?: string
-          instructions?: string
-          created_by?: string
-          created_at?: string
+          claim_date?: string
+          claimed_at?: string
+          id?: number
+          reward_slot?: number
+          user_id?: string
         }
+        Relationships: [
+          {
+            foreignKeyName: "daily_ad_claims_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          }
+        ]
       }
       hero_images: {
         Row: {
-          id: number
-          image_url: string
           alt_text: string
           created_at: string
+          id: number
+          image_url: string
         }
         Insert: {
-          id?: number
-          image_url: string
           alt_text: string
           created_at?: string
+          id?: number
+          image_url: string
+        }
+        Update: {
+          alt_text?: string
+          created_at?: string
+          id?: number
+          image_url?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          credits: number
+          id: string
+          role: string
+          updated_at: string | null
+        }
+        Insert: {
+          credits?: number
+          id: string
+          role?: string
+          updated_at?: string | null
+        }
+        Update: {
+          credits?: number
+          id?: string
+          role?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profiles_id_fkey"
+            columns: ["id"]
+            isOneToOne: true
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      prompts: {
+        Row: {
+          category_id: number
+          created_at: string
+          created_by: string
+          id: string
+          image_url: string
+          instructions: string
+          prompt_text: string
+          title: string
+        }
+        Insert: {
+          category_id: number
+          created_at?: string
+          created_by: string
+          id?: string
+          image_url: string
+          instructions: string
+          prompt_text: string
+          title: string
+        }
+        Update: {
+          category_id?: number
+          created_at?: string
+          created_by?: string
+          id?: string
+          image_url?: string
+          instructions?: string
+          prompt_text?: string
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "prompts_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "prompts_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      unlocked_prompts: {
+        Row: {
+          id: number
+          prompt_id: string
+          unlocked_at: string
+          user_id: string
+        }
+        Insert: {
+          id?: number
+          prompt_id: string
+          unlocked_at?: string
+          user_id: string
         }
         Update: {
           id?: number
-          image_url?: string
-          alt_text?: string
-          created_at?: string
-        }
-      }
-      ad_views: {
-        Row: {
-          id: string
-          user_id: string
-          prompt_id: string
-          payout: number | null
-          country: string | null
-          offer_id: string | null
-          completed_at: string
-        }
-        Insert: {
-          id?: string
-          user_id: string
-          prompt_id: string
-          payout?: number | null
-          country?: string | null
-          offer_id?: string | null
-          completed_at?: string
-        }
-        Update: {
-          id?: string
-          user_id?: string
           prompt_id?: string
-          payout?: number | null
-          country?: string | null
-          offer_id?: string | null
-          completed_at?: string
+          unlocked_at?: string
+          user_id?: string
         }
+        Relationships: [
+          {
+            foreignKeyName: "unlocked_prompts_prompt_id_fkey"
+            columns: ["prompt_id"]
+            isOneToOne: false
+            referencedRelation: "prompts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "unlocked_prompts_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          }
+        ]
       }
     }
     Views: {

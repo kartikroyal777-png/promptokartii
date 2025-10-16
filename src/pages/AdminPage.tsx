@@ -1,12 +1,12 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { supabase } from '../lib/supabase';
-import { Prompt, HeroImage, Category, AdView } from '../types';
+import { Prompt, HeroImage, Category, AppConfig } from '../types';
 import Button from '../components/ui/Button';
-import { Plus, Loader, Trash2, X, Pencil, DollarSign, Eye } from 'lucide-react';
+import { Plus, Loader, Trash2, X, Pencil, Settings } from 'lucide-react';
 import toast from 'react-hot-toast';
 
-type AdminTab = 'prompts' | 'hero' | 'analytics';
+type AdminTab = 'prompts' | 'hero' | 'settings';
 
 const AdminPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<AdminTab>('prompts');
@@ -60,9 +60,12 @@ const AdminPage: React.FC = () => {
   };
 
   const handleDeletePrompt = async (promptId: string, imageUrl: string) => {
-    if (!window.confirm('Are you sure you want to delete this prompt?')) return;
+    if (!window.confirm('Are you sure you want to delete this prompt? This will also remove associated unlock records.')) return;
     const toastId = toast.loading('Deleting prompt...');
     
+    // Manually delete from unlocked_prompts first due to RLS
+    await supabase.from('unlocked_prompts').delete().eq('prompt_id', promptId);
+
     const { error: dbError } = await supabase.from('prompts').delete().eq('id', promptId);
     if (dbError) {
       toast.error(dbError.message, { id: toastId });
@@ -121,49 +124,51 @@ const AdminPage: React.FC = () => {
   }
 
   return (
-    <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-28">
-      <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="mb-12">
-        <h1 className="text-3xl md:text-5xl font-extrabold text-dark font-display">Admin Dashboard</h1>
-        <p className="text-md md:text-lg text-slate-600">Manage your prompts and site content.</p>
-      </motion.div>
+    <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="bg-white p-6 sm:p-8 lg:p-10 rounded-xl shadow-soft">
+        <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="mb-12">
+            <h1 className="text-3xl md:text-5xl font-extrabold text-dark font-display">Admin Dashboard</h1>
+            <p className="text-md md:text-lg text-slate-600">Manage your prompts and site content.</p>
+        </motion.div>
 
-      <div className="flex border-b border-light mb-8 flex-wrap">
-        <TabButton name="Manage Prompts" tab="prompts" activeTab={activeTab} setActiveTab={setActiveTab} />
-        <TabButton name="Manage Hero Images" tab="hero" activeTab={activeTab} setActiveTab={setActiveTab} />
-        <TabButton name="Analytics" tab="analytics" activeTab={activeTab} setActiveTab={setActiveTab} />
+        <div className="flex border-b border-light mb-8 flex-wrap">
+            <TabButton name="Manage Prompts" tab="prompts" activeTab={activeTab} setActiveTab={setActiveTab} />
+            <TabButton name="Manage Hero Images" tab="hero" activeTab={activeTab} setActiveTab={setActiveTab} />
+            <TabButton name="Settings" tab="settings" activeTab={activeTab} setActiveTab={setActiveTab} />
+        </div>
+
+        {activeTab === 'prompts' && (
+            <AdminSection
+            title="Prompts"
+            loading={loadingPrompts}
+            showForm={showPromptForm}
+            onToggleForm={() => { setShowPromptForm(!showPromptForm); setEditingPrompt(null); }}
+            isEditing={!!editingPrompt}
+            renderForm={() => <PromptForm categories={categories} setFormLoading={setFormLoading} formLoading={formLoading} promptToEdit={editingPrompt} onComplete={handlePromptFormComplete} />}
+            renderTable={() => (
+                <PromptsTable prompts={prompts} onEdit={handleEditPrompt} onDelete={handleDeletePrompt} />
+            )}
+            />
+        )}
+
+        {activeTab === 'hero' && (
+            <AdminSection
+            title="Hero Images"
+            loading={loadingHeroImages}
+            showForm={showHeroForm}
+            onToggleForm={() => { setShowHeroForm(!showHeroForm); setEditingHeroImage(null); }}
+            isEditing={!!editingHeroImage}
+            renderForm={() => <HeroImageForm setFormLoading={setFormLoading} formLoading={formLoading} heroImageToEdit={editingHeroImage} onComplete={handleHeroFormComplete} />}
+            renderTable={() => (
+                <HeroImagesTable heroImages={heroImages} onEdit={handleEditHeroImage} onDelete={handleDeleteHeroImage} />
+            )}
+            />
+        )}
+
+        {activeTab === 'settings' && (
+            <SettingsSection />
+        )}
       </div>
-
-      {activeTab === 'prompts' && (
-        <AdminSection
-          title="Prompts"
-          loading={loadingPrompts}
-          showForm={showPromptForm}
-          onToggleForm={() => { setShowPromptForm(!showPromptForm); setEditingPrompt(null); }}
-          isEditing={!!editingPrompt}
-          renderForm={() => <PromptForm categories={categories} setFormLoading={setFormLoading} formLoading={formLoading} promptToEdit={editingPrompt} onComplete={handlePromptFormComplete} />}
-          renderTable={() => (
-            <PromptsTable prompts={prompts} onEdit={handleEditPrompt} onDelete={handleDeletePrompt} />
-          )}
-        />
-      )}
-
-      {activeTab === 'hero' && (
-        <AdminSection
-          title="Hero Images"
-          loading={loadingHeroImages}
-          showForm={showHeroForm}
-          onToggleForm={() => { setShowHeroForm(!showHeroForm); setEditingHeroImage(null); }}
-          isEditing={!!editingHeroImage}
-          renderForm={() => <HeroImageForm setFormLoading={setFormLoading} formLoading={formLoading} heroImageToEdit={editingHeroImage} onComplete={handleHeroFormComplete} />}
-          renderTable={() => (
-            <HeroImagesTable heroImages={heroImages} onEdit={handleEditHeroImage} onDelete={handleDeleteHeroImage} />
-          )}
-        />
-      )}
-
-      {activeTab === 'analytics' && (
-        <AnalyticsSection />
-      )}
     </div>
   );
 };
@@ -188,7 +193,7 @@ const AdminSection = ({ title, loading, showForm, onToggleForm, isEditing, rende
       )}
     </div>
     {showForm && (
-      <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className="bg-white p-4 md:p-8 rounded-xl shadow-soft mb-12 overflow-hidden">
+      <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className="bg-slate-50 p-4 md:p-8 rounded-xl border border-light mb-12 overflow-hidden">
         {renderForm()}
       </motion.div>
     )}
@@ -196,28 +201,44 @@ const AdminSection = ({ title, loading, showForm, onToggleForm, isEditing, rende
   </motion.div>
 );
 
-const AnalyticsSection = () => {
-  const [adViews, setAdViews] = useState<AdView[]>([]);
+const SettingsSection = () => {
+  const [config, setConfig] = useState<AppConfig[]>([]);
   const [loading, setLoading] = useState(true);
-  const AVG_PAYOUT = 0.05; // Placeholder average payout per view in USD
+  const [promptCost, setPromptCost] = useState('1');
+  const [saving, setSaving] = useState(false);
 
-  useEffect(() => {
-    const fetchAdViews = async () => {
-      setLoading(true);
-      const { data, error } = await supabase.from('ad_views').select('*');
-      if (error) {
-        toast.error('Could not fetch analytics data.');
-        console.error(error);
-      } else {
-        setAdViews(data as any[]);
-      }
-      setLoading(false);
-    };
-    fetchAdViews();
+  const fetchConfig = useCallback(async () => {
+    setLoading(true);
+    const { data, error } = await supabase.from('app_config').select('*');
+    if (error) {
+      toast.error("Failed to load settings.");
+    } else {
+      setConfig(data);
+      const cost = data.find(c => c.config_key === 'prompt_cost')?.config_value;
+      if (cost) setPromptCost(cost);
+    }
+    setLoading(false);
   }, []);
 
-  const totalViews = adViews.length;
-  const estimatedEarnings = adViews.reduce((sum, view) => sum + (view.payout || AVG_PAYOUT), 0);
+  useEffect(() => {
+    fetchConfig();
+  }, [fetchConfig]);
+
+  const handleSave = async () => {
+    setSaving(true);
+    const { error } = await supabase
+      .from('app_config')
+      .update({ config_value: promptCost })
+      .eq('config_key', 'prompt_cost');
+    
+    if (error) {
+      toast.error(error.message);
+    } else {
+      toast.success("Settings saved!");
+      fetchConfig();
+    }
+    setSaving(false);
+  };
 
   if (loading) {
     return <div className="text-center py-10"><Loader className="animate-spin mx-auto text-accent" /></div>;
@@ -225,26 +246,25 @@ const AnalyticsSection = () => {
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-      <h2 className="text-2xl md:text-3xl font-bold text-dark font-display mb-6">Analytics</h2>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="bg-white p-6 rounded-xl shadow-soft flex items-center gap-6">
-          <div className="bg-sky-100 p-4 rounded-full">
-            <Eye className="w-8 h-8 text-sky-500" />
-          </div>
-          <div>
-            <p className="text-slate-500 text-sm">Total Ad Completions</p>
-            <p className="text-3xl font-bold text-dark">{totalViews}</p>
-          </div>
+      <h2 className="text-2xl md:text-3xl font-bold text-dark font-display mb-6">App Settings</h2>
+      <div className="max-w-md space-y-4 bg-slate-50 p-6 rounded-xl border border-light">
+        <div>
+          <label htmlFor="promptCost" className="block text-sm font-medium text-slate-700 mb-1">
+            Prompt Unlock Cost (Credits)
+          </label>
+          <input
+            type="number"
+            id="promptCost"
+            value={promptCost}
+            onChange={(e) => setPromptCost(e.target.value)}
+            className="w-full p-3 border border-light rounded-lg"
+            min="0"
+            step="1"
+          />
         </div>
-        <div className="bg-white p-6 rounded-xl shadow-soft flex items-center gap-6">
-          <div className="bg-green-100 p-4 rounded-full">
-            <DollarSign className="w-8 h-8 text-green-500" />
-          </div>
-          <div>
-            <p className="text-slate-500 text-sm">Estimated Earnings</p>
-            <p className="text-3xl font-bold text-dark">${estimatedEarnings.toFixed(2)}</p>
-          </div>
-        </div>
+        <Button onClick={handleSave} disabled={saving}>
+          {saving ? 'Saving...' : 'Save Settings'}
+        </Button>
       </div>
     </motion.div>
   );

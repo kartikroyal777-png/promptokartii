@@ -3,14 +3,15 @@ import { Routes, Route, useLocation } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 
 import Header from './components/Header';
-import Footer from './components/Footer';
 import HomePage from './pages/HomePage';
 import PromptsPage from './pages/PromptsPage';
 import PromptDetailPage from './pages/PromptDetailPage';
-import LoginPage from './pages/LoginPage';
+import AuthPage from './pages/AuthPage';
 import AdminPage from './pages/AdminPage';
 import ProtectedRoute from './components/ProtectedRoute';
-import { useAd } from './contexts/AdContext';
+import BottomNavBar from './components/BottomNavBar';
+import InstructionsPage from './pages/InstructionsPage';
+import EarnCreditsPage from './pages/EarnCreditsPage';
 
 const pageVariants = {
   initial: {
@@ -41,7 +42,9 @@ const AnimatedRoutes = () => {
         <Route path="/" element={<PageWrapper><HomePage /></PageWrapper>} />
         <Route path="/prompts" element={<PageWrapper><PromptsPage /></PageWrapper>} />
         <Route path="/prompt/:id" element={<PageWrapper><PromptDetailPage /></PageWrapper>} />
-        <Route path="/login" element={<PageWrapper><LoginPage /></PageWrapper>} />
+        <Route path="/instructions" element={<PageWrapper><InstructionsPage /></PageWrapper>} />
+        <Route path="/earn" element={<PageWrapper><EarnCreditsPage /></PageWrapper>} />
+        <Route path="/auth" element={<PageWrapper><AuthPage /></PageWrapper>} />
         <Route element={<ProtectedRoute />}>
           <Route path="/admin" element={<PageWrapper><AdminPage /></PageWrapper>} />
         </Route>
@@ -66,11 +69,13 @@ const PageWrapper = ({ children }: { children: React.ReactNode }) => (
 function App() {
   return (
     <>
-      <Header />
-      <main className="min-h-screen">
-        <AnimatedRoutes />
-      </main>
-      <Footer />
+      <div className="flex flex-col min-h-screen">
+        <Header />
+        <main className="flex-grow pt-20 pb-20 md:pb-0">
+          <AnimatedRoutes />
+        </main>
+        <BottomNavBar />
+      </div>
     </>
   );
 }

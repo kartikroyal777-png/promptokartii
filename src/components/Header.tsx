@@ -1,100 +1,82 @@
-import React, { useState, useEffect } from 'react';
-import { Link, NavLink, useLocation } from 'react-router-dom';
-import { Sparkles, LogOut, Menu, X } from 'lucide-react';
-import { useAuth } from '../contexts/AuthContext';
-import Button from './ui/Button';
+import React, { useState, useEffect, useRef } from 'react';
+import { Link, NavLink, useNavigate } from 'react-router-dom';
+import { Sparkles, LogOut, Coins, Settings } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useAuth } from '../contexts/AuthContext';
+import { useProfile } from '../contexts/ProfileContext';
+import Button from './ui/Button';
 
 const Header: React.FC = () => {
-  const { user, signOut, isAdmin } = useAuth();
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const location = useLocation();
+  const { user, signOut } = useAuth();
+  const { profile } = useProfile();
+  const navigate = useNavigate();
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const settingsRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    setIsMenuOpen(false);
-  }, [location.pathname]);
-
-  const navLinkClasses = ({ isActive }: { isActive: boolean }) => 
-    `text-dark font-medium hover:text-accent transition-colors ${isActive ? 'text-accent' : ''}`;
-  
-  const mobileNavLinkClasses = ({ isActive }: { isActive: boolean }) => 
-    `text-2xl font-bold ${navLinkClasses({ isActive })}`;
-
-  const navLinks = (
-    <>
-      <NavLink to="/" className={isMenuOpen ? mobileNavLinkClasses : navLinkClasses}>Home</NavLink>
-      <NavLink to="/prompts" className={isMenuOpen ? mobileNavLinkClasses : navLinkClasses}>Prompts</NavLink>
-      {user && isAdmin ? (
-        <>
-          <NavLink to="/admin" className={isMenuOpen ? mobileNavLinkClasses : navLinkClasses}>Dashboard</NavLink>
-          <Button onClick={signOut} variant="secondary" className="px-4 py-2 text-sm mt-4 md:mt-0" icon={<LogOut size={16}/>}>
-            Logout
-          </Button>
-        </>
-      ) : (
-        <NavLink to="/login" className={isMenuOpen ? mobileNavLinkClasses : navLinkClasses}>Admin</NavLink>
-      )}
-    </>
-  );
+    const handleClickOutside = (event: MouseEvent) => {
+      if (settingsRef.current && !settingsRef.current.contains(event.target as Node)) {
+        setIsSettingsOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   return (
-    <>
-      <header className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-lg border-b border-light">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-20">
-            <Link to="/" className="flex items-center gap-2">
-              <Sparkles className="w-8 h-8 text-accent" />
-              <span className="text-2xl font-bold text-dark font-display">SeedreamPrompts</span>
-            </Link>
-            <nav className="hidden md:flex items-center gap-6">
-              {navLinks}
-            </nav>
-            <div className="md:hidden">
-              <button onClick={() => setIsMenuOpen(true)} aria-label="Open menu">
-                <Menu className="w-7 h-7 text-dark" />
-              </button>
-            </div>
+    <header className="fixed top-0 left-0 right-0 z-40 bg-white/80 backdrop-blur-lg border-b border-light">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between h-16 md:h-20">
+          <Link to="/" className="flex items-center gap-2">
+            <Sparkles className="w-6 h-6 md:w-8 md:h-8 text-accent" />
+            <span className="text-xl md:text-2xl font-bold text-dark font-display">Seedream<span className="text-accent">Prompts</span></span>
+          </Link>
+          <div className="flex items-center gap-2 md:gap-4">
+            {user ? (
+              <>
+                <Link to="/earn" className="flex items-center gap-2 bg-amber-100 text-amber-700 font-bold px-2.5 py-1 md:px-3 md:py-1.5 rounded-full cursor-pointer hover:bg-amber-200 transition-colors">
+                  <Coins size={16} />
+                  <span className="text-sm">{profile?.credits ?? 0}</span>
+                </Link>
+                <div className="relative" ref={settingsRef}>
+                  <button
+                    onClick={() => setIsSettingsOpen(!isSettingsOpen)}
+                    className="p-2 rounded-full hover:bg-slate-100 text-slate-600 hover:text-dark transition-colors"
+                  >
+                    <Settings size={20} />
+                  </button>
+                  <AnimatePresence>
+                    {isSettingsOpen && (
+                      <motion.div
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-soft-lg border border-light overflow-hidden"
+                      >
+                        <button
+                          onClick={() => {
+                            signOut();
+                            setIsSettingsOpen(false);
+                          }}
+                          className="w-full flex items-center gap-3 px-4 py-3 text-left text-sm text-slate-700 hover:bg-slate-50 hover:text-dark transition-colors"
+                        >
+                          <LogOut size={16} />
+                          <span>Logout</span>
+                        </button>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              </>
+            ) : (
+              <NavLink to="/auth">
+                <Button variant="primary">Login / Sign Up</Button>
+              </NavLink>
+            )}
           </div>
         </div>
-      </header>
-      <AnimatePresence>
-        {isMenuOpen && (
-          <>
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.2 }}
-              onClick={() => setIsMenuOpen(false)}
-              className="fixed inset-0 bg-black/50 z-[99] md:hidden"
-              aria-hidden="true"
-            />
-            <motion.div
-              initial={{ x: '100%' }}
-              animate={{ x: 0 }}
-              exit={{ x: '100%' }}
-              transition={{ type: 'tween', ease: 'easeInOut', duration: 0.3 }}
-              className="fixed top-0 right-0 h-full w-3/4 max-w-sm bg-white z-[100] md:hidden shadow-2xl"
-            >
-              <div className="p-6 h-full flex flex-col">
-                <div className="flex items-center justify-between mb-12">
-                  <Link to="/" className="flex items-center gap-2">
-                    <Sparkles className="w-6 h-6 text-accent" />
-                    <span className="text-xl font-bold text-dark font-display">Seedream</span>
-                  </Link>
-                  <button onClick={() => setIsMenuOpen(false)} aria-label="Close menu">
-                    <X className="w-7 h-7 text-dark" />
-                  </button>
-                </div>
-                <nav className="flex flex-col items-start gap-8">
-                  {navLinks}
-                </nav>
-              </div>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
-    </>
+      </div>
+    </header>
   );
 };
 

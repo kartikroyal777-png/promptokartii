@@ -15,6 +15,7 @@ const AdOverlay: React.FC<AdOverlayProps> = ({ isVisible, onComplete }) => {
   const [skipCountdown, setSkipCountdown] = useState(SKIP_TIMER);
   const adContainerRef = useRef<HTMLDivElement>(null);
   const [adCompleted, setAdCompleted] = useState(false);
+  const intervalRef = useRef<number>();
 
   useEffect(() => {
     if (isVisible) {
@@ -24,10 +25,10 @@ const AdOverlay: React.FC<AdOverlayProps> = ({ isVisible, onComplete }) => {
       setAdCompleted(false);
 
       // Countdown for skip button
-      const countdownInterval = setInterval(() => {
+      intervalRef.current = window.setInterval(() => {
         setSkipCountdown(prev => {
           if (prev <= 1) {
-            clearInterval(countdownInterval);
+            clearInterval(intervalRef.current);
             setCanSkip(true);
             return 0;
           }
@@ -50,7 +51,7 @@ const AdOverlay: React.FC<AdOverlayProps> = ({ isVisible, onComplete }) => {
       };
 
       return () => {
-        clearInterval(countdownInterval);
+        clearInterval(intervalRef.current);
         const existingScript = document.getElementById(AD_SCRIPT_ID);
         if (existingScript) {
           document.body.removeChild(existingScript);

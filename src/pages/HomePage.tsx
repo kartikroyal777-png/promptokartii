@@ -7,6 +7,8 @@ import { ArrowRight, ShieldCheck, Loader } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { HeroImage as HeroImageType, Prompt } from '../types';
 import PromptCard from '../components/PromptCard';
+import SearchBar from '../components/ui/SearchBar';
+import { useAuth } from '../contexts/AuthContext';
 
 const FloatingImage = ({ src, alt, className, delay = 0 }: { src: string, alt: string, className: string, delay?: number }) => (
   <motion.div
@@ -27,9 +29,11 @@ const FloatingImage = ({ src, alt, className, delay = 0 }: { src: string, alt: s
 
 const HomePage: React.FC = () => {
   const navigate = useNavigate();
+  const { isAdmin } = useAuth();
   const [heroImages, setHeroImages] = useState<HeroImageType[]>([]);
   const [prompts, setPrompts] = useState<Prompt[]>([]);
   const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
     const fetchData = async () => {
@@ -42,11 +46,10 @@ const HomePage: React.FC = () => {
       if (heroImagesRes.data && heroImagesRes.data.length > 0) {
         setHeroImages(heroImagesRes.data);
       } else {
-        // Set placeholder images if none are found
         setHeroImages([
-          { id: 1, image_url: 'https://img-wrapper.vercel.app/image?url=https://img-wrapper.vercel.app/image?url=https://placehold.co/400x600/38bdf8/ffffff?text=Style', alt_text: 'Placeholder hero image 1', created_at: new Date().toISOString() },
-          { id: 2, image_url: 'https://img-wrapper.vercel.app/image?url=https://img-wrapper.vercel.app/image?url=https://placehold.co/600x400/0f172a/ffffff?text=Art', alt_text: 'Placeholder hero image 2', created_at: new Date().toISOString() },
-          { id: 3, image_url: 'https://img-wrapper.vercel.app/image?url=https://img-wrapper.vercel.app/image?url=https://placehold.co/400x600/e2e8f0/0f172a?text=Creative', alt_text: 'Placeholder hero image 3', created_at: new Date().toISOString() },
+          { id: 1, image_url: 'https://img-wrapper.vercel.app/image?url=https://placehold.co/400x600/38bdf8/ffffff?text=Style', alt_text: 'Placeholder hero image 1', created_at: new Date().toISOString() },
+          { id: 2, image_url: 'https://img-wrapper.vercel.app/image?url=https://placehold.co/600x400/0f172a/ffffff?text=Art', alt_text: 'Placeholder hero image 2', created_at: new Date().toISOString() },
+          { id: 3, image_url: 'https://img-wrapper.vercel.app/image?url=https://placehold.co/400x600/e2e8f0/0f172a?text=Creative', alt_text: 'Placeholder hero image 3', created_at: new Date().toISOString() },
         ]);
       }
 
@@ -56,6 +59,12 @@ const HomePage: React.FC = () => {
     };
     fetchData();
   }, []);
+
+  const handleSearch = (query: string) => {
+    if (query.trim()) {
+      navigate(`/prompts?search=${encodeURIComponent(query.trim())}`);
+    }
+  };
   
   const imagePositions = [
     { className: "w-48 h-72 top-1/2 -translate-y-[70%] left-0 rotate-[-15deg]", delay: 0 },
@@ -75,21 +84,29 @@ const HomePage: React.FC = () => {
               initial={{ opacity: 0, x: -50 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.8, ease: "easeOut" }}
-              className="text-center lg:text-left"
+              className="flex flex-col items-center text-center lg:items-start lg:text-left"
             >
-              <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold text-dark font-display leading-tight mb-4">
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-dark font-display leading-tight mb-4">
                 Seedream<span className="text-accent">Prompts</span>
               </h1>
-              <p className="text-base sm:text-lg md:text-xl text-slate-600 mb-8">
-                Unlock creative AI prompts, one ad at a time.
+              <p className="text-lg md:text-xl text-slate-600 mb-8 max-w-lg">
+                Earn credits, unlock creative AI prompts.
               </p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
-                <Button onClick={() => navigate('/prompts')} variant="primary" className="w-full sm:w-auto" icon={<ArrowRight />}>
+              <SearchBar
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                onSearch={handleSearch}
+                className="w-full max-w-md mb-8"
+              />
+              <div className="flex flex-col sm:flex-row gap-4">
+                <Button onClick={() => navigate('/prompts')} variant="primary" icon={<ArrowRight />}>
                   Explore Prompts
                 </Button>
-                <Button onClick={() => navigate('/login')} variant="secondary" className="w-full sm:w-auto" icon={<ShieldCheck />}>
-                  Login as Admin
-                </Button>
+                {isAdmin && (
+                  <Button onClick={() => navigate('/admin')} variant="secondary" icon={<ShieldCheck />}>
+                    Admin Panel
+                  </Button>
+                )}
               </div>
             </motion.div>
             <div className="relative h-96 lg:h-[500px] hidden lg:block">
@@ -107,7 +124,7 @@ const HomePage: React.FC = () => {
         </div>
       </div>
 
-      <div className="py-20 bg-slate-50">
+      <div className="py-20 bg-white">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
             initial={{ opacity: 0, y: 20 }}

@@ -1,67 +1,126 @@
-import React, { createContext, useState, useContext, ReactNode, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
-import AdOverlay from '../components/AdOverlay';
-import { supabase } from '../lib/supabase';
-import { v4 as uuidv4 } from 'uuid';
+import React, { createContext, useState, useEffect, useContext, ReactNode, useCallback } from 'react';
+import toast from 'react-hot-toast';
+import { useProfile } from './ProfileContext';
+import confetti from 'canvas-confetti';
+
+declare global {
+  interface Window {
+    show_10046826?: (
+        options?: 'pop' | { type: 'inApp', inAppSettings: any }
+    ) => Promise<void>;
+  }
+}
 
 interface AdContextType {
-  showAd: (targetUrl: string, promptId: string) => void;
+  claimReward: (slot: number) => void;
+  isAdReady: boolean;
 }
 
 const AdContext = createContext<AdContextType | undefined>(undefined);
 
-const getVisitorId = () => {
-  let visitorId = localStorage.getItem('visitorId');
-  if (!visitorId) {
-    visitorId = uuidv4();
-    localStorage.setItem('visitorId', visitorId);
-  }
-  return visitorId;
-};
-
 export const AdProvider = ({ children }: { children: ReactNode }) => {
-  const [adState, setAdState] = useState<{
-    isVisible: boolean;
-    targetUrl: string | null;
-    promptId: string | null;
-  }>({ isVisible: false, targetUrl: null, promptId: null });
-  
-  const navigate = useNavigate();
+  const [isAdReady, setIsAdReady] = useState(false);
+  const { addCredits, recordAdClaim } = useProfile();
 
-  const showAd = (targetUrl: string, promptId: string) => {
-    setAdState({ isVisible: true, targetUrl, promptId });
-  };
-
-  const handleAdComplete = useCallback(async (success: boolean) => {
-    if (success && adState.promptId) {
-      const visitorId = getVisitorId();
-      // We don't have payout, country, offer_id from this script.
-      // We will insert what we have.
-      const { error } = await supabase.from('ad_views').insert({
-        user_id: visitorId,
-        prompt_id: adState.promptId,
-      });
-
-      if (error) {
-        console.error('Failed to record ad view:', error);
-      }
+  useEffect(() => {
+    const scriptId = 'rewarded-ad-sdk';
+    if (document.getElementById(scriptId)) {
+      if (typeof window.show_10046826 === 'function') setIsAdReady(true);
+      return;
     }
+
+    const script = document.createElement('script');
+    script.id = scriptId;
+    script.src = '//libtl.com/sdk.js';
+    script.async = true;
+    script.dataset.zone = '10046826';
     
-    if (adState.targetUrl) {
-      navigate(adState.targetUrl);
-    }
-    setAdState({ isVisible: false, targetUrl: null, promptId: null });
-  }, [adState.targetUrl, adState.promptId, navigate]);
+    script.onload = () => {
+      if (typeof window.show_10046826 === 'function') setIsAdReady(true);
+    };
+    
+    script.onerror = () => console.error("Ad SDK failed to load.");
+    document.body.appendChild(script);
 
-  const value = { showAd };
+    // Check periodically as some ad blockers might delay loading
+    const interval = setInterval(() => {
+      if (typeof window.show_10046826 === 'function') {
+        setIsAdReady(true);
+        clearInterval(interval);
+      }
+    }, 500);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  const showAdBySlot = (slot: number): Promise<void> => {
+      if (typeof window.show_10046826 !== 'function') {
+          return Promise.reject(new Error("Ad function not available"));
+      }
+      switch(slot) {
+          case 1:
+              return window.show_10046826(); // Standard rewarded
+          case 2:
+              return window.show_10046826('pop'); // Rewarded popup
+          case 3:
+              // This script doesn't return a promise, so we wrap it
+              return new Promise((resolve, reject) => {
+                  try {
+                      window.show_10046826?.({
+                          type: 'inApp',
+                          inAppSettings: { frequency: 1, capping: 24, interval: 0, timeout: 0, everyPage: false }
+                      });
+                      // Since there's no callback, we assume success and resolve after a short delay
+                      // to allow the ad to potentially show.
+                      setTimeout(() => resolve(), 500);
+                  } catch (e) {
+                      reject(e);
+                  }
+              });
+          default:
+              return Promise.reject(new Error("Invalid ad slot"));
+      }
+  }
+
+  const claimReward = useCallback(async (slot: number) => {
+    if (!isAdReady) {
+      toast.error('Ads are not available right now. Please try again in a moment.');
+      return;
+    }
+
+    const toastId = toast.loading('Loading ad...');
+    try {
+        await showAdBySlot(slot);
+        
+        toast.dismiss(toastId);
+        const success = await addCredits(3);
+        
+        if (success) {
+            await recordAdClaim(slot);
+            toast.success('You earned 3 credits!');
+            confetti({
+                particleCount: 100,
+                spread: 70,
+                origin: { y: 0.6 }
+            });
+        } else {
+            toast.error('Failed to add credits. Please try again.');
+        }
+    } catch (err) {
+        toast.dismiss(toastId);
+        console.error(`Error showing ad for slot ${slot}:`, err);
+        toast.error('Could not show ad. Please disable ad-blocker or try again.');
+    }
+  }, [isAdReady, addCredits, recordAdClaim]);
+
+  const value = { 
+    claimReward,
+    isAdReady,
+  };
 
   return (
     <AdContext.Provider value={value}>
       {children}
-      <AdOverlay
-        isVisible={adState.isVisible}
-        onComplete={handleAdComplete}
-      />
     </AdContext.Provider>
   );
 };

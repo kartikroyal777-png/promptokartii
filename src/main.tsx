@@ -4,6 +4,7 @@ import { BrowserRouter as Router } from 'react-router-dom';
 import App from './App.tsx';
 import { AuthProvider } from './contexts/AuthContext.tsx';
 import { ProfileProvider } from './contexts/ProfileContext.tsx';
+import { AdProvider } from './contexts/AdContext.tsx';
 import { Toaster } from 'react-hot-toast';
 import './index.css';
 
@@ -12,7 +13,9 @@ createRoot(document.getElementById('root')!).render(
     <Router>
       <AuthProvider>
         <ProfileProvider>
-          <App />
+          <AdProvider>
+            <App />
+          </AdProvider>
           <Toaster
             position="top-center"
             reverseOrder={false}

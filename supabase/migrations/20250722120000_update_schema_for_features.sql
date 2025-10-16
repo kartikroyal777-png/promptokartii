@@ -65,9 +65,9 @@ CREATE TABLE IF NOT EXISTS public.hero_images (
 -- This ensures the hero section has images on first load.
 -- It won't overwrite existing images if you run it again.
 INSERT INTO public.hero_images (position, image_url, alt_text) VALUES
-('left', 'https://img-wrapper.vercel.app/image?url=https://img-wrapper.vercel.app/image?url=https://img-wrapper.vercel.app/image?url=https://img-wrapper.vercel.app/image?url=https://img-wrapper.vercel.app/image?url=https://placehold.co/400x600/38bdf8/ffffff?text=Style', 'AI generated art style'),
-('center', 'https://img-wrapper.vercel.app/image?url=https://img-wrapper.vercel.app/image?url=https://img-wrapper.vercel.app/image?url=https://img-wrapper.vercel.app/image?url=https://img-wrapper.vercel.app/image?url=https://placehold.co/600x400/0f172a/ffffff?text=Concept', 'AI generated art concept'),
-('right', 'https://img-wrapper.vercel.app/image?url=https://img-wrapper.vercel.app/image?url=https://img-wrapper.vercel.app/image?url=https://img-wrapper.vercel.app/image?url=https://img-wrapper.vercel.app/image?url=https://placehold.co/400x600/e2e8f0/0f172a?text=Art', 'AI generated art piece')
+('left', 'https://img-wrapper.vercel.app/image?url=https://img-wrapper.vercel.app/image?url=https://img-wrapper.vercel.app/image?url=https://img-wrapper.vercel.app/image?url=https://img-wrapper.vercel.app/image?url=https://img-wrapper.vercel.app/image?url=https://placehold.co/400x600/38bdf8/ffffff?text=Style', 'AI generated art style'),
+('center', 'https://img-wrapper.vercel.app/image?url=https://img-wrapper.vercel.app/image?url=https://img-wrapper.vercel.app/image?url=https://img-wrapper.vercel.app/image?url=https://img-wrapper.vercel.app/image?url=https://img-wrapper.vercel.app/image?url=https://placehold.co/600x400/0f172a/ffffff?text=Concept', 'AI generated art concept'),
+('right', 'https://img-wrapper.vercel.app/image?url=https://img-wrapper.vercel.app/image?url=https://img-wrapper.vercel.app/image?url=https://img-wrapper.vercel.app/image?url=https://img-wrapper.vercel.app/image?url=https://img-wrapper.vercel.app/image?url=https://placehold.co/400x600/e2e8f0/0f172a?text=Art', 'AI generated art piece')
 ON CONFLICT (position) DO NOTHING;
 
 -- 4. Enable RLS for 'hero_images' table and define policies

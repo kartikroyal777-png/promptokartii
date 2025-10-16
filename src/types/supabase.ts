@@ -48,6 +48,27 @@ export interface Database {
         }
         Relationships: []
       }
+      coupon_codes: {
+        Row: {
+          code: string
+          created_at: string
+          credits: number
+          is_active: boolean
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          credits: number
+          is_active?: boolean
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          credits?: number
+          is_active?: boolean
+        }
+        Relationships: []
+      }
       daily_ad_claims: {
         Row: {
           claim_date: string
@@ -249,6 +270,42 @@ export interface Database {
           }
         ]
       }
+      user_coupon_claims: {
+        Row: {
+          claimed_at: string
+          coupon_code: string
+          id: number
+          user_id: string
+        }
+        Insert: {
+          claimed_at?: string
+          coupon_code: string
+          id?: number
+          user_id: string
+        }
+        Update: {
+          claimed_at?: string
+          coupon_code?: string
+          id?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_coupon_claims_coupon_code_fkey"
+            columns: ["coupon_code"]
+            isOneToOne: false
+            referencedRelation: "coupon_codes"
+            referencedColumns: ["code"]
+          },
+          {
+            foreignKeyName: "user_coupon_claims_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -260,6 +317,12 @@ export interface Database {
         }
         Returns: undefined
       }
+      claim_coupon_reward: {
+        Args: {
+          p_coupon_code: string
+        }
+        Returns: number
+      }
       claim_link_reward: {
         Args: {
           p_link_id: number
@@ -269,6 +332,12 @@ export interface Database {
       claim_telegram_reward: {
         Args: Record<PropertyKey, never>
         Returns: undefined
+      }
+      is_admin: {
+        Args: {
+          p_user_id: string
+        }
+        Returns: boolean
       }
       purchase_prompt: {
         Args: {

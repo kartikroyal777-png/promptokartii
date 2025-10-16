@@ -15,6 +15,7 @@ interface ProfileContextType {
   unlockPrompt: (promptId: string) => Promise<boolean>;
   addCredits: (amount: number) => Promise<boolean>;
   recordAdClaim: (slot: number) => Promise<void>;
+  claimTelegramReward: () => Promise<void>;
 }
 
 const ProfileContext = createContext<ProfileContextType | undefined>(undefined);
@@ -115,6 +116,23 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  const claimTelegramReward = async () => {
+    if (!user) {
+      toast.error("You must be logged in to claim rewards.");
+      return;
+    }
+
+    const toastId = toast.loading("Claiming your reward...");
+    const { error } = await supabase.rpc('claim_telegram_reward');
+
+    if (error) {
+      toast.error(error.message, { id: toastId });
+    } else {
+      toast.success("Reward claimed! +5 credits added.", { id: toastId });
+      await fetchProfileData();
+    }
+  };
+
   const isAdmin = profile?.role === 'admin';
 
   const value = {
@@ -128,6 +146,7 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
     unlockPrompt,
     addCredits,
     recordAdClaim,
+    claimTelegramReward,
   };
 
   return (

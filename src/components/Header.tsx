@@ -70,7 +70,7 @@ const Header: React.FC = () => {
               </>
             ) : (
               <NavLink to="/auth">
-                <Button variant="primary">Login / Sign Up</Button>
+                <Button variant="primary">Sign In</Button>
               </NavLink>
             )}
           </div>

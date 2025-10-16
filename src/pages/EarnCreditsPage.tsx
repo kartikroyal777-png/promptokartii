@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Gift, Coins, CheckCircle, Loader } from 'lucide-react';
+import { Gift, Coins, CheckCircle, Loader, Send } from 'lucide-react';
 import Button from '../components/ui/Button';
 import { useAd } from '../contexts/AdContext';
 import { useProfile } from '../contexts/ProfileContext';
@@ -12,7 +12,7 @@ const containerVariants = {
   visible: {
     opacity: 1,
     transition: {
-      staggerChildren: 0.2,
+      staggerChildren: 0.1,
     },
   },
 };
@@ -31,23 +31,31 @@ const itemVariants = {
 
 const EarnCreditsPage: React.FC = () => {
   const { claimReward, isAdReady } = useAd();
-  const { dailyClaims, loadingProfile } = useProfile();
+  const { profile, dailyClaims, loadingProfile, claimTelegramReward } = useProfile();
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [claimingTelegram, setClaimingTelegram] = useState(false);
 
   if (!user) {
     navigate('/auth');
     return null;
   }
 
-  const rewards = [
+  const handleClaimTelegram = async () => {
+    setClaimingTelegram(true);
+    window.open('https://t.me/+2kmMIBggTIsxNzc1', '_blank');
+    await claimTelegramReward();
+    setClaimingTelegram(false);
+  };
+
+  const adRewards = [
     { slot: 1, amount: 3 },
     { slot: 2, amount: 3 },
     { slot: 3, amount: 3 },
   ];
 
   const totalClaimed = dailyClaims.length;
-  const totalAvailable = rewards.length;
+  const totalAvailable = adRewards.length;
 
   return (
     <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -60,9 +68,9 @@ const EarnCreditsPage: React.FC = () => {
         <div className="text-center mb-12">
           <Gift className="w-16 h-16 mx-auto text-amber-400 mb-4" />
           <h1 className="text-4xl md:text-5xl font-extrabold text-dark font-display mb-4">Earn Daily Credits</h1>
-          <p className="text-lg text-slate-600">Watch ads to earn credits for unlocking prompts. Your credits reset daily.</p>
+          <p className="text-lg text-slate-600">Complete tasks to earn credits for unlocking prompts.</p>
           <div className="mt-4 text-sm font-bold text-slate-500">
-            {`Claims remaining today: ${totalAvailable - totalClaimed} / ${totalAvailable}`}
+            {`Ad claims remaining today: ${totalAvailable - totalClaimed} / ${totalAvailable}`}
           </div>
         </div>
 
@@ -77,7 +85,44 @@ const EarnCreditsPage: React.FC = () => {
             initial="hidden"
             animate="visible"
           >
-            {rewards.map(reward => {
+            <motion.div
+              variants={itemVariants}
+              className={`p-6 rounded-xl border-2 flex items-center justify-between transition-all ${
+                profile?.has_claimed_telegram_reward ? 'bg-slate-100 border-slate-200' : 'bg-sky-50 border-sky-200'
+              }`}
+            >
+              <div className="flex items-center gap-4">
+                <div className={`flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center ${
+                  profile?.has_claimed_telegram_reward ? 'bg-slate-200' : 'bg-sky-100'
+                }`}>
+                  <Send className={`w-6 h-6 ${profile?.has_claimed_telegram_reward ? 'text-slate-500' : 'text-sky-500'}`} />
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold text-dark">Join our Telegram</h3>
+                  <p className="text-slate-600 font-bold text-lg">+5 Credits</p>
+                </div>
+              </div>
+              <Button
+                onClick={handleClaimTelegram}
+                disabled={profile?.has_claimed_telegram_reward || claimingTelegram}
+                variant={profile?.has_claimed_telegram_reward ? 'secondary' : 'primary'}
+                className={
+                  profile?.has_claimed_telegram_reward 
+                  ? 'bg-slate-300 hover:bg-slate-300 text-slate-500 cursor-not-allowed' 
+                  : 'bg-sky-500 hover:bg-sky-600'
+                }
+              >
+                {profile?.has_claimed_telegram_reward ? (
+                  <CheckCircle size={20} />
+                ) : claimingTelegram ? (
+                  <Loader className="animate-spin" size={20} />
+                ) : (
+                  'Join & Claim'
+                )}
+              </Button>
+            </motion.div>
+
+            {adRewards.map(reward => {
               const isClaimed = dailyClaims.some(c => c.reward_slot === reward.slot);
               return (
                 <motion.div
@@ -94,7 +139,7 @@ const EarnCreditsPage: React.FC = () => {
                       <Coins className={`w-6 h-6 ${isClaimed ? 'text-slate-500' : 'text-amber-500'}`} />
                     </div>
                     <div>
-                      <h3 className="text-xl font-bold text-dark">Claim Reward</h3>
+                      <h3 className="text-xl font-bold text-dark">Watch Ad</h3>
                       <p className="text-slate-600 font-bold text-lg">+{reward.amount} Credits</p>
                     </div>
                   </div>

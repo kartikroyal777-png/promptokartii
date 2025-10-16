@@ -84,7 +84,7 @@ export const AdProvider = ({ children }: { children: ReactNode }) => {
 
   const claimReward = useCallback(async (slot: number) => {
     if (!isAdReady) {
-      toast.error('Ads are not available right now. Please try again in a moment.');
+      toast.error('No ads available. This might be due to an ad-blocker or network issues. Please try again later.');
       return;
     }
 
@@ -109,7 +109,7 @@ export const AdProvider = ({ children }: { children: ReactNode }) => {
     } catch (err) {
         toast.dismiss(toastId);
         console.error(`Error showing ad for slot ${slot}:`, err);
-        toast.error('Could not show ad. Please disable ad-blocker or try again.');
+        toast.error('Could not show ad. This might be due to an ad-blocker. Please try again.');
     }
   }, [isAdReady, addCredits, recordAdClaim]);
 

@@ -104,18 +104,21 @@ export interface Database {
       profiles: {
         Row: {
           credits: number
+          has_claimed_telegram_reward: boolean
           id: string
           role: string
           updated_at: string | null
         }
         Insert: {
           credits?: number
+          has_claimed_telegram_reward?: boolean
           id: string
           role?: string
           updated_at?: string | null
         }
         Update: {
           credits?: number
+          has_claimed_telegram_reward?: boolean
           id?: string
           role?: string
           updated_at?: string | null
@@ -219,7 +222,24 @@ export interface Database {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      add_credits: {
+        Args: {
+          user_id: string
+          amount: number
+        }
+        Returns: undefined
+      }
+      claim_telegram_reward: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
+      purchase_prompt: {
+        Args: {
+          p_prompt_id_in: string
+          p_cost_in: number
+        }
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never

@@ -102,7 +102,7 @@ const AuthPage: React.FC = () => {
                 />
               </div>
               <div>
-                <Button type="submit" variant="primary" className="w-full" disabled={loading}>
+                <Button type="submit" variant="primary" className="w-full py-2" disabled={loading}>
                   {loading ? (
                     <Loader className="animate-spin" />
                   ) : (

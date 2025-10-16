@@ -222,10 +222,9 @@ export interface Database {
       [_ in never]: never
     }
     Functions: {
-      add_credits: {
+      claim_ad_reward: {
         Args: {
-          user_id: string
-          amount: number
+          p_reward_slot: number
         }
         Returns: undefined
       }

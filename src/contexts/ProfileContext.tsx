@@ -1,8 +1,9 @@
 import React, { createContext, useState, useEffect, useContext, ReactNode, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from './AuthContext';
-import { Profile, UnlockedPrompt, DailyAdClaim, AppConfig } from '../types';
+import { Profile, UnlockedPrompt, DailyAdClaim } from '../types';
 import toast from 'react-hot-toast';
+import confetti from 'canvas-confetti';
 
 interface ProfileContextType {
   profile: Profile | null;
@@ -13,8 +14,7 @@ interface ProfileContextType {
   isAdmin: boolean;
   fetchProfile: () => void;
   unlockPrompt: (promptId: string) => Promise<boolean>;
-  addCredits: (amount: number) => Promise<boolean>;
-  recordAdClaim: (slot: number) => Promise<void>;
+  claimAdReward: (slot: number) => Promise<void>;
   claimTelegramReward: () => Promise<void>;
 }
 
@@ -86,32 +86,24 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
     return true;
   };
 
-  const addCredits = async (amount: number): Promise<boolean> => {
-    if (!user || !profile) return false;
-    
-    const { data, error } = await supabase.rpc('add_credits', {
-      user_id: user.id,
-      amount: amount
-    });
-
-    if (error) {
-      toast.error(error.message);
-      return false;
+  const claimAdReward = async (slot: number) => {
+    if (!user) {
+      toast.error("You must be logged in to claim rewards.");
+      return;
     }
-    
-    await fetchProfileData();
-    return true;
-  };
 
-  const recordAdClaim = async (slot: number) => {
-    if (!user) return;
-    const { error } = await supabase.from('daily_ad_claims').insert({
-      user_id: user.id,
-      reward_slot: slot
-    });
+    const toastId = toast.loading("Verifying your reward...");
+    const { error } = await supabase.rpc('claim_ad_reward', { p_reward_slot: slot });
+
     if (error) {
-      console.error("Failed to record ad claim", error);
+      toast.error(error.message, { id: toastId });
     } else {
+      toast.success("Reward claimed! +3 credits added.", { id: toastId });
+      confetti({
+          particleCount: 100,
+          spread: 70,
+          origin: { y: 0.6 }
+      });
       await fetchProfileData();
     }
   };
@@ -129,6 +121,11 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
       toast.error(error.message, { id: toastId });
     } else {
       toast.success("Reward claimed! +5 credits added.", { id: toastId });
+      confetti({
+          particleCount: 100,
+          spread: 70,
+          origin: { y: 0.6 }
+      });
       await fetchProfileData();
     }
   };
@@ -144,8 +141,7 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
     isAdmin,
     fetchProfile: fetchProfileData,
     unlockPrompt,
-    addCredits,
-    recordAdClaim,
+    claimAdReward,
     claimTelegramReward,
   };
 

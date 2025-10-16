@@ -80,6 +80,38 @@ export interface Database {
           }
         ]
       }
+      daily_link_claims: {
+        Row: {
+          claim_date: string
+          claimed_at: string
+          id: number
+          link_id: number
+          user_id: string
+        }
+        Insert: {
+          claim_date?: string
+          claimed_at?: string
+          id?: number
+          link_id: number
+          user_id: string
+        }
+        Update: {
+          claim_date?: string
+          claimed_at?: string
+          id?: number
+          link_id?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "daily_link_claims_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
       hero_images: {
         Row: {
           alt_text: string
@@ -225,6 +257,12 @@ export interface Database {
       claim_ad_reward: {
         Args: {
           p_reward_slot: number
+        }
+        Returns: undefined
+      }
+      claim_link_reward: {
+        Args: {
+          p_link_id: number
         }
         Returns: undefined
       }

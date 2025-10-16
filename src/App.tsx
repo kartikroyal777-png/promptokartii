@@ -71,7 +71,7 @@ function App() {
     <>
       <div className="flex flex-col min-h-screen">
         <Header />
-        <main className="flex-grow pt-20 pb-20 md:pb-0">
+        <main className="flex-grow pt-20 pb-28">
           <AnimatedRoutes />
         </main>
         <BottomNavBar />

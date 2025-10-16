@@ -1,14 +1,15 @@
 import React, { createContext, useState, useEffect, useContext, ReactNode, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from './AuthContext';
-import { Profile, UnlockedPrompt, DailyAdClaim } from '../types';
+import { Profile, UnlockedPrompt, DailyAdClaim, DailyLinkClaim } from '../types';
 import toast from 'react-hot-toast';
 import confetti from 'canvas-confetti';
 
 interface ProfileContextType {
   profile: Profile | null;
   unlockedPrompts: string[];
-  dailyClaims: DailyAdClaim[];
+  dailyAdClaims: DailyAdClaim[];
+  dailyLinkClaims: DailyLinkClaim[];
   promptCost: number;
   loadingProfile: boolean;
   isAdmin: boolean;
@@ -16,6 +17,7 @@ interface ProfileContextType {
   unlockPrompt: (promptId: string) => Promise<boolean>;
   claimAdReward: (slot: number) => Promise<void>;
   claimTelegramReward: () => Promise<void>;
+  claimLinkReward: (linkId: number) => Promise<void>;
 }
 
 const ProfileContext = createContext<ProfileContextType | undefined>(undefined);
@@ -24,7 +26,8 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
   const { user, loading: authLoading } = useAuth();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [unlockedPrompts, setUnlockedPrompts] = useState<string[]>([]);
-  const [dailyClaims, setDailyClaims] = useState<DailyAdClaim[]>([]);
+  const [dailyAdClaims, setDailyAdClaims] = useState<DailyAdClaim[]>([]);
+  const [dailyLinkClaims, setDailyLinkClaims] = useState<DailyLinkClaim[]>([]);
   const [promptCost, setPromptCost] = useState(1);
   const [loadingProfile, setLoadingProfile] = useState(true);
 
@@ -32,7 +35,8 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
     if (!user) {
       setProfile(null);
       setUnlockedPrompts([]);
-      setDailyClaims([]);
+      setDailyAdClaims([]);
+      setDailyLinkClaims([]);
       setLoadingProfile(false);
       return;
     }
@@ -40,16 +44,18 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
     setLoadingProfile(true);
     try {
       const today = new Date().toISOString().split('T')[0];
-      const [profileRes, unlockedRes, claimsRes, configRes] = await Promise.all([
+      const [profileRes, unlockedRes, claimsRes, configRes, linkClaimsRes] = await Promise.all([
         supabase.from('profiles').select('*').eq('id', user.id).single(),
         supabase.from('unlocked_prompts').select('prompt_id').eq('user_id', user.id),
         supabase.from('daily_ad_claims').select('*').eq('user_id', user.id).eq('claim_date', today),
-        supabase.from('app_config').select('config_value').eq('config_key', 'prompt_cost').single()
+        supabase.from('app_config').select('config_value').eq('config_key', 'prompt_cost').single(),
+        supabase.from('daily_link_claims').select('*').eq('user_id', user.id).eq('claim_date', today)
       ]);
 
       if (profileRes.data) setProfile(profileRes.data);
       if (unlockedRes.data) setUnlockedPrompts(unlockedRes.data.map(p => p.prompt_id));
-      if (claimsRes.data) setDailyClaims(claimsRes.data);
+      if (claimsRes.data) setDailyAdClaims(claimsRes.data);
+      if (linkClaimsRes.data) setDailyLinkClaims(linkClaimsRes.data);
       if (configRes.data) setPromptCost(parseInt(configRes.data.config_value, 10) || 1);
 
     } catch (error) {
@@ -120,7 +126,29 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
     if (error) {
       toast.error(error.message, { id: toastId });
     } else {
-      toast.success("Reward claimed! +5 credits added.", { id: toastId });
+      toast.success("Reward claimed! +10 credits added.", { id: toastId });
+      confetti({
+          particleCount: 100,
+          spread: 70,
+          origin: { y: 0.6 }
+      });
+      await fetchProfileData();
+    }
+  };
+
+  const claimLinkReward = async (linkId: number) => {
+    if (!user) {
+      toast.error("You must be logged in to claim rewards.");
+      return;
+    }
+
+    const toastId = toast.loading("Verifying your reward...");
+    const { error } = await supabase.rpc('claim_link_reward', { p_link_id: linkId });
+
+    if (error) {
+      toast.error(error.message, { id: toastId });
+    } else {
+      toast.success("Reward claimed! +1 credit added.", { id: toastId });
       confetti({
           particleCount: 100,
           spread: 70,
@@ -135,7 +163,8 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
   const value = {
     profile,
     unlockedPrompts,
-    dailyClaims,
+    dailyAdClaims,
+    dailyLinkClaims,
     promptCost,
     loadingProfile,
     isAdmin,
@@ -143,6 +172,7 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
     unlockPrompt,
     claimAdReward,
     claimTelegramReward,
+    claimLinkReward,
   };
 
   return (

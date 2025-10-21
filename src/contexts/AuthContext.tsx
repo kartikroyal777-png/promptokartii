@@ -1,4 +1,4 @@
-import React, { createContext, useState, useEffect, useContext, ReactNode } from 'react';
+import React, { createContext, useState, useEffect, useContext, ReactNode, useCallback } from 'react';
 import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '../lib/supabase';
 import { useNavigate } from 'react-router-dom';
@@ -7,6 +7,7 @@ interface AuthContextType {
   user: User | null;
   session: Session | null;
   loading: boolean;
+  isAdmin: boolean;
   signOut: () => void;
 }
 
@@ -16,13 +17,31 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isAdmin, setIsAdmin] = useState(false);
   const navigate = useNavigate();
+
+  const checkAdminRole = useCallback(async (user: User | null) => {
+    if (!user) {
+      setIsAdmin(false);
+      return;
+    }
+    // You can hardcode the admin email for simplicity or check a role from your database
+    const isAdminUser = user.email === 'kartikroyal777@gmail.com';
+    setIsAdmin(isAdminUser);
+    
+    // More robust way: check 'role' from 'profiles' table
+    // const { data } = await supabase.from('profiles').select('role').eq('id', user.id).single();
+    // setIsAdmin(data?.role === 'admin');
+
+  }, []);
 
   useEffect(() => {
     const getSession = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       setSession(session);
-      setUser(session?.user ?? null);
+      const currentUser = session?.user ?? null;
+      setUser(currentUser);
+      await checkAdminRole(currentUser);
       setLoading(false);
     };
 
@@ -30,17 +49,20 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     const { data: authListener } = supabase.auth.onAuthStateChange(async (_event, session) => {
       setSession(session);
-      setUser(session?.user ?? null);
+      const currentUser = session?.user ?? null;
+      setUser(currentUser);
+      await checkAdminRole(currentUser);
       setLoading(false);
     });
 
     return () => {
       authListener.subscription.unsubscribe();
     };
-  }, []);
+  }, [checkAdminRole]);
 
   const signOut = async () => {
     await supabase.auth.signOut();
+    setIsAdmin(false);
     navigate('/');
   };
 
@@ -48,6 +70,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     user,
     session,
     loading,
+    isAdmin,
     signOut
   };
 

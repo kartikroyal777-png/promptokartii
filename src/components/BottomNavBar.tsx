@@ -1,16 +1,15 @@
 import React from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
-import { Home, Compass, User, BookOpen, Gift } from 'lucide-react';
+import { Home, Compass, User, BookOpen } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 
 const BottomNavBar: React.FC = () => {
-  const { user, isAdmin } = useAuth();
+  const { isAdmin } = useAuth();
   const location = useLocation();
 
   const navItems = [
     { path: '/', icon: Home, label: 'Home' },
     { path: '/prompts', icon: Compass, label: 'Prompts' },
-    ...(user ? [{ path: '/earn', icon: Gift, label: 'Earn' }] : []),
     { path: '/instructions', icon: BookOpen, label: 'How-To' },
     ...(isAdmin ? [{ path: '/admin', icon: User, label: 'Admin' }] : []),
   ];

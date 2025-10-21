@@ -6,7 +6,6 @@ import { supabase } from '../lib/supabase';
 import { Prompt, Category } from '../types';
 import { Loader, AlertTriangle } from 'lucide-react';
 import SearchBar from '../components/ui/SearchBar';
-import SliderAd from '../components/SliderAd';
 
 const PromptsPage: React.FC = () => {
   const [searchParams] = useSearchParams();
@@ -67,7 +66,6 @@ const PromptsPage: React.FC = () => {
 
   return (
     <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <SliderAd />
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}

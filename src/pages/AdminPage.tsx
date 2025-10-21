@@ -1,12 +1,12 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { supabase } from '../lib/supabase';
-import { Prompt, HeroImage, Category, AppConfig } from '../types';
+import { Prompt, HeroImage, Category } from '../types';
 import Button from '../components/ui/Button';
-import { Plus, Loader, Trash2, X, Pencil, Settings } from 'lucide-react';
+import { Plus, Loader, Trash2, X, Pencil } from 'lucide-react';
 import toast from 'react-hot-toast';
 
-type AdminTab = 'prompts' | 'hero' | 'settings';
+type AdminTab = 'prompts' | 'hero';
 
 const AdminPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<AdminTab>('prompts');
@@ -60,12 +60,9 @@ const AdminPage: React.FC = () => {
   };
 
   const handleDeletePrompt = async (promptId: string, imageUrl: string) => {
-    if (!window.confirm('Are you sure you want to delete this prompt? This will also remove associated unlock records.')) return;
+    if (!window.confirm('Are you sure you want to delete this prompt?')) return;
     const toastId = toast.loading('Deleting prompt...');
     
-    // Manually delete from unlocked_prompts first due to RLS
-    await supabase.from('unlocked_prompts').delete().eq('prompt_id', promptId);
-
     const { error: dbError } = await supabase.from('prompts').delete().eq('id', promptId);
     if (dbError) {
       toast.error(dbError.message, { id: toastId });
@@ -134,7 +131,6 @@ const AdminPage: React.FC = () => {
         <div className="flex border-b border-light mb-8 flex-wrap">
             <TabButton name="Manage Prompts" tab="prompts" activeTab={activeTab} setActiveTab={setActiveTab} />
             <TabButton name="Manage Hero Images" tab="hero" activeTab={activeTab} setActiveTab={setActiveTab} />
-            <TabButton name="Settings" tab="settings" activeTab={activeTab} setActiveTab={setActiveTab} />
         </div>
 
         {activeTab === 'prompts' && (
@@ -163,10 +159,6 @@ const AdminPage: React.FC = () => {
                 <HeroImagesTable heroImages={heroImages} onEdit={handleEditHeroImage} onDelete={handleDeleteHeroImage} />
             )}
             />
-        )}
-
-        {activeTab === 'settings' && (
-            <SettingsSection />
         )}
       </div>
     </div>
@@ -201,76 +193,6 @@ const AdminSection = ({ title, loading, showForm, onToggleForm, isEditing, rende
   </motion.div>
 );
 
-const SettingsSection = () => {
-  const [config, setConfig] = useState<AppConfig[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [promptCost, setPromptCost] = useState('1');
-  const [saving, setSaving] = useState(false);
-
-  const fetchConfig = useCallback(async () => {
-    setLoading(true);
-    const { data, error } = await supabase.from('app_config').select('*');
-    if (error) {
-      toast.error("Failed to load settings.");
-    } else {
-      setConfig(data);
-      const cost = data.find(c => c.config_key === 'prompt_cost')?.config_value;
-      if (cost) setPromptCost(cost);
-    }
-    setLoading(false);
-  }, []);
-
-  useEffect(() => {
-    fetchConfig();
-  }, [fetchConfig]);
-
-  const handleSave = async () => {
-    setSaving(true);
-    const { error } = await supabase
-      .from('app_config')
-      .update({ config_value: promptCost })
-      .eq('config_key', 'prompt_cost');
-    
-    if (error) {
-      toast.error(error.message);
-    } else {
-      toast.success("Settings saved!");
-      fetchConfig();
-    }
-    setSaving(false);
-  };
-
-  if (loading) {
-    return <div className="text-center py-10"><Loader className="animate-spin mx-auto text-accent" /></div>;
-  }
-
-  return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-      <h2 className="text-2xl md:text-3xl font-bold text-dark font-display mb-6">App Settings</h2>
-      <div className="max-w-md space-y-4 bg-slate-50 p-6 rounded-xl border border-light">
-        <div>
-          <label htmlFor="promptCost" className="block text-sm font-medium text-slate-700 mb-1">
-            Prompt Unlock Cost (Credits)
-          </label>
-          <input
-            type="number"
-            id="promptCost"
-            value={promptCost}
-            onChange={(e) => setPromptCost(e.target.value)}
-            className="w-full p-3 border border-light rounded-lg"
-            min="0"
-            step="1"
-          />
-        </div>
-        <Button onClick={handleSave} disabled={saving}>
-          {saving ? 'Saving...' : 'Save Settings'}
-        </Button>
-      </div>
-    </motion.div>
-  );
-};
-
-
 interface PromptFormProps {
   categories: Category[];
   setFormLoading: (loading: boolean) => void;
@@ -285,6 +207,7 @@ const PromptForm = ({ categories, setFormLoading, formLoading, onComplete, promp
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [promptText, setPromptText] = useState('');
   const [instructions, setInstructions] = useState('');
+  const [adDirectLinkUrl, setAdDirectLinkUrl] = useState('');
 
   useEffect(() => {
     if (promptToEdit) {
@@ -292,6 +215,7 @@ const PromptForm = ({ categories, setFormLoading, formLoading, onComplete, promp
       setCategoryId(promptToEdit.category_id);
       setPromptText(promptToEdit.prompt_text);
       setInstructions(promptToEdit.instructions);
+      setAdDirectLinkUrl(promptToEdit.ad_direct_link_url || '');
       setImageFile(null);
     } else {
       // Reset form when adding new
@@ -299,6 +223,7 @@ const PromptForm = ({ categories, setFormLoading, formLoading, onComplete, promp
       setCategoryId(categories.length > 0 ? categories[0].id : undefined);
       setPromptText('');
       setInstructions('');
+      setAdDirectLinkUrl('');
       setImageFile(null);
     }
   }, [promptToEdit, categories]);
@@ -342,7 +267,15 @@ const PromptForm = ({ categories, setFormLoading, formLoading, onComplete, promp
       imageUrl = supabase.storage.from('prompt-images').getPublicUrl(uploadData.path).data.publicUrl;
     }
     
-    const promptData = { title, category_id: categoryId, image_url: imageUrl, prompt_text: promptText, instructions, created_by: user.id };
+    const promptData = { 
+      title, 
+      category_id: categoryId, 
+      image_url: imageUrl, 
+      prompt_text: promptText, 
+      instructions, 
+      created_by: user.id,
+      ad_direct_link_url: adDirectLinkUrl || null
+    };
 
     if (promptToEdit) {
       const { error } = await supabase.from('prompts').update(promptData).eq('id', promptToEdit.id);
@@ -382,6 +315,7 @@ const PromptForm = ({ categories, setFormLoading, formLoading, onComplete, promp
           {categories.map(cat => <option key={cat.id} value={cat.id}>{cat.name}</option>)}
         </select>
       </div>
+      <input type="url" placeholder="Ad Direct Link URL (optional)" value={adDirectLinkUrl} onChange={e => setAdDirectLinkUrl(e.target.value)} className="w-full p-3 border border-light rounded-lg"/>
       <input type="file" accept="image/*" onChange={e => e.target.files && setImageFile(e.target.files[0])} required={!promptToEdit} className="w-full p-3 border border-light rounded-lg file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-accent/20 file:text-accent hover:file:bg-accent/30"/>
       <textarea placeholder="Prompt Text" value={promptText} onChange={e => setPromptText(e.target.value)} required rows={4} className="w-full p-3 border border-light rounded-lg"/>
       <textarea placeholder="Instructions" value={instructions} onChange={e => setInstructions(e.target.value)} required rows={2} className="w-full p-3 border border-light rounded-lg"/>

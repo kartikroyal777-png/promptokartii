@@ -47,9 +47,9 @@ const HomePage: React.FC = () => {
         setHeroImages(heroImagesRes.data);
       } else {
         setHeroImages([
-          { id: 1, image_url: 'https://img-wrapper.vercel.app/image?url=https://img-wrapper.vercel.app/image?url=https://img-wrapper.vercel.app/image?url=https://img-wrapper.vercel.app/image?url=https://placehold.co/400x600/38bdf8/ffffff?text=Style', alt_text: 'Placeholder hero image 1', created_at: new Date().toISOString() },
-          { id: 2, image_url: 'https://img-wrapper.vercel.app/image?url=https://img-wrapper.vercel.app/image?url=https://img-wrapper.vercel.app/image?url=https://img-wrapper.vercel.app/image?url=https://placehold.co/600x400/0f172a/ffffff?text=Art', alt_text: 'Placeholder hero image 2', created_at: new Date().toISOString() },
-          { id: 3, image_url: 'https://img-wrapper.vercel.app/image?url=https://img-wrapper.vercel.app/image?url=https://img-wrapper.vercel.app/image?url=https://img-wrapper.vercel.app/image?url=https://placehold.co/400x600/e2e8f0/0f172a?text=Creative', alt_text: 'Placeholder hero image 3', created_at: new Date().toISOString() },
+          { id: 1, image_url: 'https://img-wrapper.vercel.app/image?url=https://img-wrapper.vercel.app/image?url=https://img-wrapper.vercel.app/image?url=https://img-wrapper.vercel.app/image?url=https://img-wrapper.vercel.app/image?url=https://img-wrapper.vercel.app/image?url=https://placehold.co/400x600/38bdf8/ffffff?text=Style', alt_text: 'Placeholder hero image 1', created_at: new Date().toISOString() },
+          { id: 2, image_url: 'https://img-wrapper.vercel.app/image?url=https://img-wrapper.vercel.app/image?url=https://img-wrapper.vercel.app/image?url=https://img-wrapper.vercel.app/image?url=https://img-wrapper.vercel.app/image?url=https://img-wrapper.vercel.app/image?url=https://placehold.co/600x400/0f172a/ffffff?text=Art', alt_text: 'Placeholder hero image 2', created_at: new Date().toISOString() },
+          { id: 3, image_url: 'https://img-wrapper.vercel.app/image?url=https://img-wrapper.vercel.app/image?url=https://img-wrapper.vercel.app/image?url=https://img-wrapper.vercel.app/image?url=https://img-wrapper.vercel.app/image?url=https://img-wrapper.vercel.app/image?url=https://placehold.co/400x600/e2e8f0/0f172a?text=Creative', alt_text: 'Placeholder hero image 3', created_at: new Date().toISOString() },
         ]);
       }
 
@@ -90,7 +90,7 @@ const HomePage: React.FC = () => {
                 Seedream<span className="text-accent">Prompts</span>
               </h1>
               <p className="text-lg md:text-xl text-slate-600 mb-8 max-w-lg">
-                Earn credits, unlock creative AI prompts.
+                Unlock creative AI prompts, instantly and for free.
               </p>
               <SearchBar
                 value={searchTerm}

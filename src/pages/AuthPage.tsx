@@ -2,14 +2,11 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../lib/supabase';
 import toast from 'react-hot-toast';
-import { Mail, Key, AlertCircle, Loader, Sparkles } from 'lucide-react';
+import { Mail, Key, AlertCircle, Loader, Sparkles, User } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import Button from '../components/ui/Button';
 
-type AuthMode = 'login' | 'signup';
-
 const AuthPage: React.FC = () => {
-  const [mode, setMode] = useState<AuthMode>('login');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -21,30 +18,14 @@ const AuthPage: React.FC = () => {
     setLoading(true);
     setError(null);
 
-    if (mode === 'login') {
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
-      if (error) {
-        setError(error.message);
-      } else {
-        toast.success('Logged in successfully!');
-        navigate('/');
-      }
-    } else { // signup
-      const { error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          // New users start with 0 credits as per the new DB function
-          data: {} 
-        }
-      });
-      if (error) {
-        setError(error.message);
-      } else {
-        toast.success('Account created! Welcome aboard.');
-        navigate('/');
-      }
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) {
+      setError(error.message);
+    } else {
+      toast.success('Logged in successfully!');
+      navigate('/admin');
     }
+    
     setLoading(false);
   };
 
@@ -54,11 +35,11 @@ const AuthPage: React.FC = () => {
         <div className="flex flex-col justify-center items-center p-6 md:p-12 order-2 lg:order-1">
           <div className="w-full max-w-md">
             <div className="text-left mb-8">
-              <h1 className="text-3xl md:text-4xl font-extrabold text-dark font-display">
-                {mode === 'login' ? 'Welcome Back' : 'Create an Account'}
+              <h1 className="text-3xl md:text-4xl font-extrabold text-dark font-display flex items-center gap-3">
+                <User /> Admin Login
               </h1>
               <p className="mt-2 text-slate-600">
-                {mode === 'login' ? 'Sign in to unlock your next creation.' : 'Join our community to start creating.'}
+                Please enter your admin credentials to continue.
               </p>
             </div>
 
@@ -105,26 +86,10 @@ const AuthPage: React.FC = () => {
                 <Button type="submit" variant="primary" className="w-full py-2" disabled={loading}>
                   {loading ? (
                     <Loader className="animate-spin" />
-                  ) : (
-                    mode === 'login' ? 'Sign In' : 'Create Account'
-                  )}
+                  ) : 'Sign In'}
                 </Button>
               </div>
             </form>
-            <div className="mt-6 text-center">
-              <p className="text-sm text-slate-600">
-                {mode === 'login' ? "Don't have an account?" : "Already have an account?"}
-                <button
-                  onClick={() => {
-                    setMode(mode === 'login' ? 'signup' : 'login');
-                    setError(null);
-                  }}
-                  className="font-medium text-accent hover:underline ml-1"
-                >
-                  {mode === 'login' ? 'Sign up' : 'Sign in'}
-                </button>
-              </p>
-            </div>
           </div>
         </div>
         <div className="hidden lg:flex flex-col justify-center items-center bg-sky-50 p-12 order-1 lg:order-2">

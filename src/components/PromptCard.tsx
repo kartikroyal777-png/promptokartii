@@ -12,6 +12,9 @@ const PromptCard: React.FC<PromptCardProps> = ({ prompt }) => {
   const navigate = useNavigate();
 
   const handleView = () => {
+    if (prompt.ad_direct_link_url) {
+      window.open(prompt.ad_direct_link_url, '_blank', 'noopener,noreferrer');
+    }
     navigate(`/prompt/${prompt.id}`);
   };
 

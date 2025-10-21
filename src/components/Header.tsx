@@ -61,7 +61,7 @@ const Header: React.FC = () => {
               </div>
             ) : (
               <NavLink to="/auth">
-                <Button variant="primary" icon={<User size={16}/>}>Admin Login</Button>
+                <Button variant="primary" icon={<User size={16}/>} className="px-3 py-1.5 text-xs md:px-4">Admin</Button>
               </NavLink>
             )}
           </div>

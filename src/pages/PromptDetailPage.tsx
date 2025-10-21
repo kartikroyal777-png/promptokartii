@@ -5,6 +5,7 @@ import { supabase } from '../lib/supabase';
 import { Prompt } from '../types';
 import Button from '../components/ui/Button';
 import { ArrowLeft, Copy, Check, Info, Loader } from 'lucide-react';
+import StackedBannerAds from '../components/ads/StackedBannerAds';
 
 const PromptDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -68,6 +69,7 @@ const PromptDetailPage: React.FC = () => {
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back to Prompts
           </Button>
+          <StackedBannerAds />
           <div className="bg-white p-6 sm:p-8 lg:p-10 rounded-xl shadow-soft">
               <div className="grid lg:grid-cols-5 gap-8 lg:gap-12">
               <motion.div 

@@ -9,6 +9,7 @@ import { HeroImage as HeroImageType, Prompt } from '../types';
 import PromptCard from '../components/PromptCard';
 import SearchBar from '../components/ui/SearchBar';
 import { useAuth } from '../contexts/AuthContext';
+import StackedBannerAds from '../components/ads/StackedBannerAds';
 
 const FloatingImage = ({ src, alt, className, delay = 0 }: { src: string, alt: string, className: string, delay?: number }) => (
   <motion.div
@@ -47,9 +48,9 @@ const HomePage: React.FC = () => {
         setHeroImages(heroImagesRes.data);
       } else {
         setHeroImages([
-          { id: 1, image_url: 'https://img-wrapper.vercel.app/image?url=https://img-wrapper.vercel.app/image?url=https://img-wrapper.vercel.app/image?url=https://img-wrapper.vercel.app/image?url=https://img-wrapper.vercel.app/image?url=https://img-wrapper.vercel.app/image?url=https://placehold.co/400x600/38bdf8/ffffff?text=Style', alt_text: 'Placeholder hero image 1', created_at: new Date().toISOString() },
-          { id: 2, image_url: 'https://img-wrapper.vercel.app/image?url=https://img-wrapper.vercel.app/image?url=https://img-wrapper.vercel.app/image?url=https://img-wrapper.vercel.app/image?url=https://img-wrapper.vercel.app/image?url=https://img-wrapper.vercel.app/image?url=https://placehold.co/600x400/0f172a/ffffff?text=Art', alt_text: 'Placeholder hero image 2', created_at: new Date().toISOString() },
-          { id: 3, image_url: 'https://img-wrapper.vercel.app/image?url=https://img-wrapper.vercel.app/image?url=https://img-wrapper.vercel.app/image?url=https://img-wrapper.vercel.app/image?url=https://img-wrapper.vercel.app/image?url=https://img-wrapper.vercel.app/image?url=https://placehold.co/400x600/e2e8f0/0f172a?text=Creative', alt_text: 'Placeholder hero image 3', created_at: new Date().toISOString() },
+          { id: 1, image_url: 'https://img-wrapper.vercel.app/image?url=https://img-wrapper.vercel.app/image?url=https://img-wrapper.vercel.app/image?url=https://img-wrapper.vercel.app/image?url=https://placehold.co/400x600/38bdf8/ffffff?text=Style', alt_text: 'Placeholder hero image 1', created_at: new Date().toISOString() },
+          { id: 2, image_url: 'https://img-wrapper.vercel.app/image?url=https://img-wrapper.vercel.app/image?url=https://img-wrapper.vercel.app/image?url=https://img-wrapper.vercel.app/image?url=https://placehold.co/600x400/0f172a/ffffff?text=Art', alt_text: 'Placeholder hero image 2', created_at: new Date().toISOString() },
+          { id: 3, image_url: 'https://img-wrapper.vercel.app/image?url=https://img-wrapper.vercel.app/image?url=https://img-wrapper.vercel.app/image?url=https://img-wrapper.vercel.app/image?url=https://placehold.co/400x600/e2e8f0/0f172a?text=Creative', alt_text: 'Placeholder hero image 3', created_at: new Date().toISOString() },
         ]);
       }
 
@@ -84,12 +85,12 @@ const HomePage: React.FC = () => {
               initial={{ opacity: 0, x: -50 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.8, ease: "easeOut" }}
-              className="flex flex-col items-center text-center lg:items-start lg:text-left"
+              className="w-full flex flex-col items-center text-center lg:items-start lg:text-left"
             >
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-dark font-display leading-tight mb-4">
+              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold text-dark font-display leading-tight mb-4 break-words">
                 Seedream<span className="text-accent">Prompts</span>
               </h1>
-              <p className="text-lg md:text-xl text-slate-600 mb-8 max-w-lg">
+              <p className="text-base sm:text-lg md:text-xl text-slate-600 mb-8 max-w-lg">
                 Unlock creative AI prompts, instantly and for free.
               </p>
               <SearchBar
@@ -98,7 +99,7 @@ const HomePage: React.FC = () => {
                 onSearch={handleSearch}
                 className="w-full max-w-md mb-8"
               />
-              <div className="flex flex-col sm:flex-row gap-4 items-center">
+              <div className="flex flex-col sm:flex-row gap-4 items-center justify-center lg:justify-start">
                 <Button onClick={() => navigate('/prompts')} variant="primary" icon={<ArrowRight />}>
                   Explore Prompts
                 </Button>
@@ -126,6 +127,7 @@ const HomePage: React.FC = () => {
 
       <div className="py-20 bg-white">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <StackedBannerAds />
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}

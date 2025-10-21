@@ -6,6 +6,7 @@ import { supabase } from '../lib/supabase';
 import { Prompt, Category } from '../types';
 import { Loader, AlertTriangle } from 'lucide-react';
 import SearchBar from '../components/ui/SearchBar';
+import StackedBannerAds from '../components/ads/StackedBannerAds';
 
 const PromptsPage: React.FC = () => {
   const [searchParams] = useSearchParams();
@@ -112,6 +113,8 @@ const PromptsPage: React.FC = () => {
             ))}
         </div>
         
+        <StackedBannerAds />
+
         {loading && <div className="text-center py-10"><Loader className="w-8 h-8 animate-spin text-accent mx-auto" /></div>}
         
         {error && (

@@ -51,65 +51,45 @@ export interface Database {
         }
         Relationships: []
       }
-      profiles: {
-        Row: {
-          id: string
-          role: string
-          updated_at: string | null
-        }
-        Insert: {
-          id: string
-          role?: string
-          updated_at?: string | null
-        }
-        Update: {
-          id?: string
-          role?: string
-          updated_at?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "profiles_id_fkey"
-            columns: ["id"]
-            isOneToOne: true
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       prompts: {
         Row: {
           ad_direct_link_url: string | null
           category_id: number
           created_at: string
-          created_by: string
           id: string
           image_url: string
           instructions: string
           prompt_text: string
           title: string
+          like_count: number
+          creator_name: string | null
+          instagram_handle: string | null
         }
         Insert: {
           ad_direct_link_url?: string | null
           category_id: number
           created_at?: string
-          created_by: string
           id?: string
           image_url: string
           instructions: string
           prompt_text: string
           title: string
+          like_count?: number
+          creator_name?: string | null
+          instagram_handle?: string | null
         }
         Update: {
           ad_direct_link_url?: string | null
           category_id?: number
           created_at?: string
-          created_by?: string
           id?: string
           image_url?: string
           instructions?: string
           prompt_text?: string
           title?: string
+          like_count?: number
+          creator_name?: string | null
+          instagram_handle?: string | null
         }
         Relationships: [
           {
@@ -118,14 +98,7 @@ export interface Database {
             isOneToOne: false
             referencedRelation: "categories"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "prompts_created_by_fkey"
-            columns: ["created_by"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
+          }
         ]
       }
     }
@@ -133,11 +106,11 @@ export interface Database {
       [_ in never]: never
     }
     Functions: {
-      is_admin: {
+      increment_like_count: {
         Args: {
-          p_user_id: string
+          p_prompt_id: string
         }
-        Returns: boolean
+        Returns: undefined
       }
     }
     Enums: {

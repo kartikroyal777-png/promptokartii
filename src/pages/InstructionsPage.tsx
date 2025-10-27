@@ -1,42 +1,41 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Link } from 'react-router-dom';
-import { Sparkles, MousePointerClick, Image as ImageIcon, Bot, Film } from 'lucide-react';
+import { Sparkles, MousePointerClick, Image as ImageIcon, Bot, Film, Download } from 'lucide-react';
 import Button from '../components/ui/Button';
 
 const instructions = [
   {
     icon: MousePointerClick,
-    title: "Visit lmarena.ai",
-    description: "Start by navigating to the lmarena.ai website in your browser.",
+    title: "Explore & Find a Prompt",
+    description: "Browse our collection and click on a prompt you like to see the details.",
     color: "text-sky-500",
     bg: "bg-sky-100"
   },
   {
+    icon: Sparkles,
+    title: "Copy the Prompt Text",
+    description: "On the prompt detail page, you'll find the full prompt text. Use the copy button to easily grab it.",
+    color: "text-amber-500",
+    bg: "bg-amber-100"
+  },
+  {
     icon: Bot,
-    title: "Choose Direct Chat",
-    description: "From the battle options at the top of the page, select 'Direct Chat' to begin.",
+    title: "Go to Your Favorite AI Generator",
+    description: "Open your preferred AI image generation tool, like Midjourney, Stable Diffusion, or DALL-E.",
     color: "text-indigo-500",
     bg: "bg-indigo-100"
   },
   {
     icon: ImageIcon,
-    title: "Click Image Generation",
-    description: "In the prompt box, find and click on the 'Image Generation' icon.",
+    title: "Paste and Generate",
+    description: "Paste the copied prompt into the text box of the AI tool and generate your image.",
     color: "text-rose-500",
     bg: "bg-rose-100"
   },
   {
-    icon: Sparkles,
-    title: "Select Seedream Model",
-    description: "From the list of available models above the prompt box, choose the 'Seedream' image model.",
-    color: "text-amber-500",
-    bg: "bg-amber-100"
-  },
-  {
     icon: Film,
-    title: "Generate Your Image",
-    description: "Paste your prompt from our site, hit 'Generate', and watch as AI transforms your words into a 4K cinematic image!",
+    title: "Enjoy Your Creation!",
+    description: "Watch as the AI transforms the words into a unique, high-quality image!",
     color: "text-emerald-500",
     bg: "bg-emerald-100"
   }
@@ -102,9 +101,9 @@ const InstructionsPage: React.FC = () => {
         </motion.div>
 
         <div className="text-center mt-12">
-            <a href="https://lmarena.ai" target="_blank" rel="noopener noreferrer">
+            <a href="/prompts">
                 <Button variant="primary">
-                    Go to lmarena.ai
+                    Explore Prompts Now
                 </Button>
             </a>
         </div>

@@ -1,32 +1,44 @@
-import React from 'react';
-import AdComponent from '../components/ads/AdComponent';
+import React, { useState, useEffect } from 'react';
 import Header from '../components/Header';
-import BottomNavBar from '../components/BottomNavBar';
+import Footer from '../components/Footer';
 import DesktopAdSidebar from '../components/ads/DesktopAdSidebar';
+import BottomNavBar from '../components/BottomNavBar';
+import MonetizationModal from '../components/MonetizationModal';
 
 type MainLayoutProps = {
   children: React.ReactNode;
 };
 
 const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  useEffect(() => {
+    const hasSeenModal = localStorage.getItem('hasSeenMonetizationModal');
+    if (!hasSeenModal) {
+      const timer = setTimeout(() => {
+        setIsModalOpen(true);
+        localStorage.setItem('hasSeenMonetizationModal', 'true');
+      }, 2000);
+      return () => clearTimeout(timer);
+    }
+  }, []);
+
   return (
     <div className="bg-gray-100 min-h-screen flex flex-col">
-      <Header />
+      <div className="fixed top-0 left-0 right-0 z-40 px-4 pt-4">
+        <Header onMonetizeClick={() => setIsModalOpen(true)} />
+      </div>
       
-      {/* Pop-under Ad - Global */}
-      <AdComponent type="script" scriptSrc="//pl27896121.effectivegatecpm.com/c3/3f/7b/c33f7bb0c23c240204543347c9879d22.js" />
-
-      <div className="flex flex-1 w-full max-w-screen-2xl mx-auto pt-16 md:pt-20">
-        {/* Main Content */}
+      <div className="flex flex-1 w-full max-w-screen-2xl mx-auto pt-24 md:pt-28 pb-24 md:pb-8">
         <main className="flex-grow p-4 md:p-6 overflow-y-auto w-full">
           {children}
         </main>
-
-        {/* Right Sidebar with all Desktop Ads */}
         <DesktopAdSidebar />
       </div>
 
-      <BottomNavBar />
+      <Footer />
+      <BottomNavBar onMonetizeClick={() => setIsModalOpen(true)} />
+      <MonetizationModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
     </div>
   );
 };

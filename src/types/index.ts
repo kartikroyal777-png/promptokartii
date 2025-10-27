@@ -5,4 +5,3 @@ export type Prompt = Database['public']['Tables']['prompts']['Row'] & {
   categories: { name: string } | null;
 };
 export type HeroImage = Database['public']['Tables']['hero_images']['Row'];
-export type Profile = Database['public']['Tables']['profiles']['Row'];

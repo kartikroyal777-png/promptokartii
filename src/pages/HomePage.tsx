@@ -3,12 +3,12 @@ import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import Button from '../components/ui/Button';
 import Orb from '../components/Orb';
-import { ArrowRight, ShieldCheck, Loader } from 'lucide-react';
+import Particles from '../components/Particles';
+import { ArrowRight, Loader, Upload } from 'lucide-react';
 import { supabase } from '../lib/supabase';
-import { HeroImage as HeroImageType, Prompt } from '../types';
+import { HeroImage, Prompt } from '../types';
 import PromptCard from '../components/PromptCard';
 import SearchBar from '../components/ui/SearchBar';
-import { useAuth } from '../contexts/AuthContext';
 import StackedBannerAds from '../components/ads/StackedBannerAds';
 
 const FloatingImage = ({ src, alt, className, delay = 0 }: { src: string, alt: string, className: string, delay?: number }) => (
@@ -30,8 +30,7 @@ const FloatingImage = ({ src, alt, className, delay = 0 }: { src: string, alt: s
 
 const HomePage: React.FC = () => {
   const navigate = useNavigate();
-  const { isAdmin } = useAuth();
-  const [heroImages, setHeroImages] = useState<HeroImageType[]>([]);
+  const [heroImages, setHeroImages] = useState<HeroImage[]>([]);
   const [prompts, setPrompts] = useState<Prompt[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -41,16 +40,16 @@ const HomePage: React.FC = () => {
       setLoading(true);
       const [heroImagesRes, promptsRes] = await Promise.all([
         supabase.from('hero_images').select('*').order('created_at', { ascending: false }).limit(3),
-        supabase.from('prompts').select('*, categories(name)').order('created_at', { ascending: false }).limit(6)
+        supabase.from('prompts').select('*, categories(name)').order('like_count', { ascending: false }).limit(6)
       ]);
 
       if (heroImagesRes.data && heroImagesRes.data.length > 0) {
         setHeroImages(heroImagesRes.data);
       } else {
         setHeroImages([
-          { id: 1, image_url: 'https://img-wrapper.vercel.app/image?url=https://img-wrapper.vercel.app/image?url=https://img-wrapper.vercel.app/image?url=https://img-wrapper.vercel.app/image?url=https://placehold.co/400x600/38bdf8/ffffff?text=Style', alt_text: 'Placeholder hero image 1', created_at: new Date().toISOString() },
-          { id: 2, image_url: 'https://img-wrapper.vercel.app/image?url=https://img-wrapper.vercel.app/image?url=https://img-wrapper.vercel.app/image?url=https://img-wrapper.vercel.app/image?url=https://placehold.co/600x400/0f172a/ffffff?text=Art', alt_text: 'Placeholder hero image 2', created_at: new Date().toISOString() },
-          { id: 3, image_url: 'https://img-wrapper.vercel.app/image?url=https://img-wrapper.vercel.app/image?url=https://img-wrapper.vercel.app/image?url=https://img-wrapper.vercel.app/image?url=https://placehold.co/400x600/e2e8f0/0f172a?text=Creative', alt_text: 'Placeholder hero image 3', created_at: new Date().toISOString() },
+          { id: 1, image_url: 'https://img-wrapper.vercel.app/image?url=https://placehold.co/400x600/38bdf8/ffffff?text=Style', alt_text: 'Placeholder hero image 1', created_at: new Date().toISOString() },
+          { id: 2, image_url: 'https://img-wrapper.vercel.app/image?url=https://placehold.co/600x400/0f172a/ffffff?text=Art', alt_text: 'Placeholder hero image 2', created_at: new Date().toISOString() },
+          { id: 3, image_url: 'https://img-wrapper.vercel.app/image?url=https://placehold.co/400x600/e2e8f0/0f172a?text=Creative', alt_text: 'Placeholder hero image 3', created_at: new Date().toISOString() },
         ]);
       }
 
@@ -76,9 +75,20 @@ const HomePage: React.FC = () => {
   return (
     <>
       <div className="w-full min-h-screen overflow-hidden relative flex items-center justify-center pt-28 pb-16 md:pt-20">
-        <div className="absolute inset-0 z-0 opacity-50">
-          <Orb />
+        <div className="absolute inset-0 z-0">
+          <Particles
+            className="absolute inset-0"
+            particleCount={100}
+            particleColors={['#38bdf8', '#ffffff', '#e2e8f0']}
+            speed={0.05}
+            particleBaseSize={1.5}
+            moveParticlesOnHover={true}
+          />
+          <div className="absolute inset-0 opacity-50 pointer-events-none">
+            <Orb />
+          </div>
         </div>
+
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 z-10">
           <div className="grid lg:grid-cols-2 gap-16 items-center">
             <motion.div 
@@ -87,11 +97,11 @@ const HomePage: React.FC = () => {
               transition={{ duration: 0.8, ease: "easeOut" }}
               className="w-full flex flex-col items-center text-center lg:items-start lg:text-left"
             >
-              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold text-dark font-display leading-tight mb-4 break-words">
-                Seedream<span className="text-accent">Prompts</span>
+              <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold text-dark font-display leading-tight mb-2 break-words" style={{ fontWeight: 800 }}>
+                Dollar<span className="text-accent">Prompt</span>
               </h1>
-              <p className="text-base sm:text-lg md:text-xl text-slate-600 mb-8 max-w-lg">
-                Unlock creative AI prompts, instantly and for free.
+              <p className="text-lg sm:text-xl md:text-2xl text-slate-600 mb-8 max-w-lg">
+                Monetize your prompts.
               </p>
               <SearchBar
                 value={searchTerm}
@@ -100,14 +110,12 @@ const HomePage: React.FC = () => {
                 className="w-full max-w-md mb-8"
               />
               <div className="flex flex-col sm:flex-row gap-4 items-center justify-center lg:justify-start">
-                <Button onClick={() => navigate('/prompts')} variant="primary" icon={<ArrowRight />}>
+                <Button onClick={() => navigate('/upload')} variant="primary" icon={<Upload size={16}/>}>
+                  Upload Your Prompt
+                </Button>
+                 <Button onClick={() => navigate('/prompts')} variant="outline" icon={<ArrowRight />}>
                   Explore Prompts
                 </Button>
-                {isAdmin && (
-                  <Button onClick={() => navigate('/admin')} variant="secondary" icon={<ShieldCheck />}>
-                    Admin Panel
-                  </Button>
-                )}
               </div>
             </motion.div>
             <div className="relative h-96 lg:h-[500px] hidden lg:block">
@@ -135,8 +143,8 @@ const HomePage: React.FC = () => {
             transition={{ duration: 0.5 }}
             className="text-center mb-12"
           >
-            <h2 className="text-4xl md:text-5xl font-extrabold text-dark font-display">Latest Prompts</h2>
-            <p className="text-lg text-slate-600 mt-2">Get a glimpse of our growing collection.</p>
+            <h2 className="text-4xl md:text-5xl font-extrabold text-dark font-display">Trending Prompts</h2>
+            <p className="text-lg text-slate-600 mt-2">Get a glimpse of our most popular creations.</p>
           </motion.div>
           {loading ? (
             <div className="flex justify-center items-center h-64">

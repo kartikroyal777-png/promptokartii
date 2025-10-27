@@ -27,17 +27,15 @@ const PromptsPage: React.FC = () => {
       try {
         const [promptsRes, categoriesRes] = await Promise.all([
           supabase.from('prompts').select('*, categories(name)').order('created_at', { ascending: false }),
-          supabase.from('categories').select('*').order('name', { ascending: true })
+          supabase.from('categories').select('*').order('name', { ascending: true }),
         ]);
 
         if (promptsRes.error) throw promptsRes.error;
-        setPrompts(promptsRes.data as any[]);
+        if (categoriesRes.error) throw categoriesRes.error;
 
-        if (categoriesRes.error) {
-          console.warn('Could not fetch categories:', categoriesRes.error.message);
-        } else {
-          setCategories(categoriesRes.data);
-        }
+        setPrompts(promptsRes.data as any[]);
+        setCategories(categoriesRes.data);
+
       } catch (err: any) {
         console.error('Error fetching data:', err);
         setError("Could not load data. This might be due to a network issue or a browser extension (like an ad blocker) interfering with the connection. Please check your connection and try again.");

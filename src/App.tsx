@@ -4,25 +4,26 @@ import MainLayout from './layouts/MainLayout';
 import HomePage from './pages/HomePage';
 import PromptsPage from './pages/PromptsPage';
 import PromptDetailPage from './pages/PromptDetailPage';
-import AuthPage from './pages/AuthPage';
-import AdminPage from './pages/AdminPage';
-import ProtectedRoute from './components/ProtectedRoute';
+import UploadPromptPage from './pages/UploadPromptPage';
 import InstructionsPage from './pages/InstructionsPage';
-import SocialBarAd from './components/ads/SocialBarAd';
+import AboutPage from './pages/AboutPage';
+import PrivacyPage from './pages/PrivacyPage';
+import TermsPage from './pages/TermsPage';
+import GlobalAdScripts from './components/GlobalAdScripts';
 
 function App() {
   return (
     <>
-      <SocialBarAd />
+      <GlobalAdScripts />
       <Routes>
         <Route path="/" element={<MainLayout><HomePage /></MainLayout>} />
         <Route path="/prompts" element={<MainLayout><PromptsPage /></MainLayout>} />
         <Route path="/prompt/:id" element={<MainLayout><PromptDetailPage /></MainLayout>} />
+        <Route path="/upload" element={<MainLayout><UploadPromptPage /></MainLayout>} />
         <Route path="/instructions" element={<MainLayout><InstructionsPage /></MainLayout>} />
-        <Route path="/auth" element={<AuthPage />} />
-        <Route element={<ProtectedRoute />}>
-          <Route path="/admin" element={<MainLayout><AdminPage /></MainLayout>} />
-        </Route>
+        <Route path="/about" element={<MainLayout><AboutPage /></MainLayout>} />
+        <Route path="/privacy" element={<MainLayout><PrivacyPage /></MainLayout>} />
+        <Route path="/terms-of-service" element={<MainLayout><TermsPage /></MainLayout>} />
       </Routes>
     </>
   );

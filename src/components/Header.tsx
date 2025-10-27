@@ -1,73 +1,57 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Link, NavLink } from 'react-router-dom';
-import { Sparkles, LogOut, Settings, User } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { useAuth } from '../contexts/AuthContext';
+import React from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { Sparkles, Upload, DollarSign } from 'lucide-react';
+import { motion } from 'framer-motion';
 import Button from './ui/Button';
 
-const Header: React.FC = () => {
-  const { user, isAdmin, signOut } = useAuth();
-  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  const settingsRef = useRef<HTMLDivElement>(null);
+interface HeaderProps {
+  onMonetizeClick: () => void;
+}
 
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (settingsRef.current && !settingsRef.current.contains(event.target as Node)) {
-        setIsSettingsOpen(false);
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
+const Header: React.FC<HeaderProps> = ({ onMonetizeClick }) => {
+  const navigate = useNavigate();
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-40 bg-white/80 backdrop-blur-lg border-b border-light">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+    <motion.header 
+      initial={{ y: -100 }}
+      animate={{ y: 0 }}
+      transition={{ duration: 0.5, ease: 'easeOut' }}
+      className="w-full max-w-6xl mx-auto"
+    >
+      <div className="bg-white/80 backdrop-blur-lg border border-light rounded-2xl shadow-soft px-4 sm:px-6">
         <div className="flex items-center justify-between h-16 md:h-20">
           <Link to="/" className="flex items-center gap-2">
-            <Sparkles className="w-6 h-6 md:w-8 md:h-8 text-accent" />
-            <span className="text-xl md:text-2xl font-bold text-dark font-display">Seedream<span className="text-accent">Prompts</span></span>
+            <Sparkles className="w-6 h-6 md:w-7 md:h-7 text-accent" />
+            <span className="text-xl md:text-2xl font-bold text-dark font-display" style={{ fontWeight: 600 }}>
+              Dollar<span className="text-accent">Prompt</span>
+            </span>
           </Link>
           <div className="flex items-center gap-2 md:gap-4">
-            {user && isAdmin ? (
-              <div className="relative" ref={settingsRef}>
-                <button
-                  onClick={() => setIsSettingsOpen(!isSettingsOpen)}
-                  className="p-2 rounded-full hover:bg-slate-100 text-slate-600 hover:text-dark transition-colors"
-                >
-                  <Settings size={20} />
-                </button>
-                <AnimatePresence>
-                  {isSettingsOpen && (
-                    <motion.div
-                      initial={{ opacity: 0, y: -10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -10 }}
-                      className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-soft-lg border border-light overflow-hidden"
-                    >
-                      <button
-                        onClick={() => {
-                          signOut();
-                          setIsSettingsOpen(false);
-                        }}
-                        className="w-full flex items-center gap-3 px-4 py-3 text-left text-sm text-slate-700 hover:bg-slate-50 hover:text-dark transition-colors"
-                      >
-                        <LogOut size={16} />
-                        <span>Logout</span>
-                      </button>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
-            ) : (
-              <NavLink to="/auth">
-                <Button variant="primary" icon={<User size={16}/>} className="px-3 py-1.5 text-xs md:px-4">Admin</Button>
-              </NavLink>
-            )}
+            <button 
+              onClick={onMonetizeClick}
+              className="p-2.5 rounded-full text-slate-600 hover:bg-slate-100 hover:text-dark transition-colors"
+              aria-label="How to monetize prompts"
+            >
+              <DollarSign size={20} />
+            </button>
+            
+            {/* Desktop Upload Button */}
+            <Button onClick={() => navigate('/upload')} variant="primary" icon={<Upload size={16}/>} className="hidden md:flex">
+              Upload Prompt
+            </Button>
+
+            {/* Mobile Upload Button */}
+            <button 
+              onClick={() => navigate('/upload')}
+              className="md:hidden p-2.5 rounded-full text-slate-600 bg-slate-100 hover:bg-slate-200 hover:text-dark transition-colors"
+              aria-label="Upload prompt"
+            >
+              <Upload size={20} />
+            </button>
           </div>
         </div>
       </div>
-    </header>
+    </motion.header>
   );
 };
 

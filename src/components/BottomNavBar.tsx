@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { Home, LayoutGrid, PlusSquare, DollarSign } from 'lucide-react';
+import { Home, LayoutGrid, PlusSquare, DollarSign, Coins } from 'lucide-react';
 
 interface BottomNavBarProps {
   onMonetizeClick: () => void;
@@ -27,6 +27,10 @@ const BottomNavBar: React.FC<BottomNavBarProps> = ({ onMonetizeClick }) => {
         <NavLink to="/upload" className={getLinkClass}>
           <PlusSquare size={24} />
           <span className="text-xs font-medium">Upload</span>
+        </NavLink>
+        <NavLink to="/earn" className={getLinkClass}>
+          <Coins size={24} />
+          <span className="text-xs font-medium">Earn</span>
         </NavLink>
         <button onClick={onMonetizeClick} className={`${commonClasses} hover:bg-slate-100`}>
           <DollarSign size={24} />

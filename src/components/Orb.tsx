@@ -269,15 +269,13 @@ export default function Orb({
     rafId = requestAnimationFrame(update);
 
     return () => {
-      // 1. Stop the animation loop
       cancelAnimationFrame(rafId);
-      
-      // 2. Remove global and local event listeners
       window.removeEventListener('resize', resize);
-      container.removeEventListener('mousemove', handleMouseMove);
-      container.removeEventListener('mouseleave', handleMouseLeave);
+      if (container) {
+        container.removeEventListener('mousemove', handleMouseMove);
+        container.removeEventListener('mouseleave', handleMouseLeave);
+      }
       
-      // 3. Gracefully dispose of WebGL resources
       try {
         if (gl.canvas.parentNode) {
           gl.canvas.parentNode.removeChild(gl.canvas);

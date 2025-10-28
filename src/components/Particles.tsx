@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useMemo } from 'react';
 import { Renderer, Camera, Geometry, Program, Mesh } from 'ogl';
 
 interface ParticlesProps {
@@ -115,6 +115,8 @@ const Particles: React.FC<ParticlesProps> = ({
   const containerRef = useRef<HTMLDivElement>(null);
   const mouseRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
 
+  const stableParticleColors = useMemo(() => particleColors, [particleColors]);
+
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
@@ -146,14 +148,14 @@ const Particles: React.FC<ParticlesProps> = ({
     };
 
     if (moveParticlesOnHover) {
-      container.addEventListener('mousemove', handleMouseMove);
+      document.addEventListener('mousemove', handleMouseMove);
     }
 
     const count = particleCount;
     const positions = new Float32Array(count * 3);
     const randoms = new Float32Array(count * 4);
     const colors = new Float32Array(count * 3);
-    const palette = particleColors && particleColors.length > 0 ? particleColors : defaultColors;
+    const palette = stableParticleColors && stableParticleColors.length > 0 ? stableParticleColors : defaultColors;
 
     for (let i = 0; i < count; i++) {
       let x: number, y: number, z: number, len: number;
@@ -205,11 +207,8 @@ const Particles: React.FC<ParticlesProps> = ({
       program.uniforms.uTime.value = elapsed * 0.001;
 
       if (moveParticlesOnHover) {
-        particles.position.x = -mouseRef.current.x * particleHoverFactor;
-        particles.position.y = -mouseRef.current.y * particleHoverFactor;
-      } else {
-        particles.position.x = 0;
-        particles.position.y = 0;
+        particles.position.x += (-mouseRef.current.x * particleHoverFactor - particles.position.x) * 0.1;
+        particles.position.y += (-mouseRef.current.y * particleHoverFactor - particles.position.y) * 0.1;
       }
 
       if (!disableRotation) {
@@ -225,19 +224,23 @@ const Particles: React.FC<ParticlesProps> = ({
 
     return () => {
       window.removeEventListener('resize', resize);
-      if (moveParticlesOnHover && container) {
-        container.removeEventListener('mousemove', handleMouseMove);
+      if (moveParticlesOnHover) {
+        document.removeEventListener('mousemove', handleMouseMove);
       }
       cancelAnimationFrame(animationFrameId);
       if (container && container.contains(gl.canvas)) {
-        container.removeChild(gl.canvas);
+        try {
+            container.removeChild(gl.canvas);
+        } catch (e) {
+            // ignore if already removed
+        }
       }
     };
   }, [
     particleCount,
     particleSpread,
     speed,
-    JSON.stringify(particleColors),
+    stableParticleColors,
     moveParticlesOnHover,
     particleHoverFactor,
     alphaParticles,

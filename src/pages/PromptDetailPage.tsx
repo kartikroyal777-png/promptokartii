@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../lib/supabase';
 import { Prompt } from '../types';
@@ -9,6 +9,7 @@ import StackedBannerAds from '../components/ads/StackedBannerAds';
 import { FaHeart, FaInstagram } from 'react-icons/fa';
 import toast from 'react-hot-toast';
 import confetti from 'canvas-confetti';
+import AdComponent from '../components/ads/AdComponent';
 
 const getLikedPrompts = (): string[] => {
     const liked = localStorage.getItem('likedPrompts');
@@ -184,6 +185,16 @@ const PromptDetailPage: React.FC = () => {
                   </motion.div>
                   </motion.div>
               </div>
+              </div>
+               <div className="mt-8 border-t border-light pt-8">
+                <h3 className="font-bold text-slate-500 text-sm uppercase tracking-wider text-center mb-4">Advertisement</h3>
+                <div className="flex justify-center">
+                   <AdComponent 
+                    type="options" 
+                    scriptSrc="//www.highperformanceformat.com/336a43554e25b2330d93dfe8a5251632/invoke.js" 
+                    options={{ key: '336a43554e25b2330d93dfe8a5251632', format: 'iframe', height: 90, width: 728, params: {} }} 
+                    />
+                </div>
               </div>
           </div>
         </div>

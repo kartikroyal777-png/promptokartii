@@ -8,6 +8,7 @@ import { Prompt } from '../types';
 import PromptCard from '../components/PromptCard';
 import SearchBar from '../components/ui/SearchBar';
 import StackedBannerAds from '../components/ads/StackedBannerAds';
+import Orb from '../components/Orb';
 
 const HomePage: React.FC = () => {
   const navigate = useNavigate();
@@ -39,7 +40,10 @@ const HomePage: React.FC = () => {
 
   return (
     <>
-      <div className="w-full relative flex items-center justify-center pt-16 pb-8 md:pt-20">
+      <div className="w-full relative flex items-center justify-center pt-16 pb-4 md:pt-20">
+        <div className="absolute inset-0 z-[-1] opacity-50 pointer-events-none">
+            <Orb hue={200} hoverIntensity={0.5} />
+        </div>
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 z-10">
           <div className="w-full flex flex-col items-center text-center">
             <motion.div 
@@ -81,7 +85,14 @@ const HomePage: React.FC = () => {
 
       <div className="py-20 bg-white">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <StackedBannerAds />
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.3 }}
+            transition={{ duration: 0.5 }}
+          >
+            <StackedBannerAds />
+          </motion.div>
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}

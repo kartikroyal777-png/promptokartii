@@ -9,7 +9,7 @@ interface OrbProps {
 }
 
 export default function Orb({
-  hue = 200,
+  hue = 0,
   hoverIntensity = 0.2,
   rotateOnHover = true,
   forceHoverState = false
@@ -202,7 +202,7 @@ export default function Orb({
 
     const mesh = new Mesh(gl, { geometry, program });
 
-    const resize = () => {
+    function resize() {
       if (!container) return;
       const dpr = window.devicePixelRatio || 1;
       const width = container.clientWidth;
@@ -274,15 +274,14 @@ export default function Orb({
       if (container) {
         container.removeEventListener('mousemove', handleMouseMove);
         container.removeEventListener('mouseleave', handleMouseLeave);
-      }
-      
-      try {
         if (gl.canvas.parentNode) {
-          gl.canvas.parentNode.removeChild(gl.canvas);
+            container.removeChild(gl.canvas);
         }
+      }
+      try {
         gl.getExtension('WEBGL_lose_context')?.loseContext();
       } catch (e) {
-        console.error("Error during Orb component cleanup:", e);
+        // Context might already be lost
       }
     };
   }, [hue, hoverIntensity, rotateOnHover, forceHoverState]);

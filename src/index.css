@@ -1,3 +1,36 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@property --angle {
+  syntax: '<angle>';
+  initial-value: 0deg;
+  inherits: false;
+}
+
+@keyframes rotate {
+  to {
+    --angle: 360deg;
+  }
+}
+
+.btn-glow-border {
+  position: relative;
+  overflow: hidden;
+  z-index: 1;
+}
+
+.btn-glow-border::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  z-index: -1;
+  background: conic-gradient(from var(--angle), transparent 40%, var(--glow-color, #38bdf8), transparent 60%);
+  animation: rotate 4s linear infinite;
+  opacity: 0;
+  transition: opacity 0.3s ease-in-out;
+}
+
+.btn-glow-border:hover::before {
+  opacity: 1;
+}

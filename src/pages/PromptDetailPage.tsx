@@ -119,7 +119,14 @@ const PromptDetailPage: React.FC = () => {
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back to Prompts
           </Button>
-          <StackedBannerAds />
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.3 }}
+            transition={{ duration: 0.5 }}
+          >
+            <StackedBannerAds />
+          </motion.div>
           <div className="bg-white p-6 sm:p-8 lg:p-10 rounded-xl shadow-soft">
               <div className="grid lg:grid-cols-5 gap-8 lg:gap-12">
               <motion.div 

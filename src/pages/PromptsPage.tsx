@@ -111,7 +111,14 @@ const PromptsPage: React.FC = () => {
             ))}
         </div>
         
-        <StackedBannerAds />
+        <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.3 }}
+            transition={{ duration: 0.5 }}
+        >
+            <StackedBannerAds />
+        </motion.div>
 
         {loading && <div className="text-center py-10"><Loader className="w-8 h-8 animate-spin text-accent mx-auto" /></div>}
         

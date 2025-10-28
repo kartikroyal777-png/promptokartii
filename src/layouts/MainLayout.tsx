@@ -5,7 +5,6 @@ import DesktopAdSidebar from '../components/ads/DesktopAdSidebar';
 import BottomNavBar from '../components/BottomNavBar';
 import MonetizationModal from '../components/MonetizationModal';
 import Particles from '../components/Particles';
-import Orb from '../components/Orb';
 
 type MainLayoutProps = {
   children: React.ReactNode;
@@ -28,7 +27,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
 
   return (
     <div className="bg-gray-100 min-h-screen flex flex-col">
-      <div className="fixed inset-0 z-[-1] pointer-events-none">
+      <div className="fixed inset-0 z-[-2] pointer-events-none">
         <Particles
           className="absolute inset-0"
           particleCount={100}
@@ -38,9 +37,6 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
           moveParticlesOnHover={true}
           particleHoverFactor={0.2}
         />
-        <div className="absolute inset-0 opacity-50">
-          <Orb hue={200} hoverIntensity={0.3} />
-        </div>
       </div>
 
       <div className="fixed top-4 left-0 right-0 z-40 px-4">

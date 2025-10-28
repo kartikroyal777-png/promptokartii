@@ -7,15 +7,28 @@ import { supabase } from '../lib/supabase';
 import { FaHeart, FaInstagram } from "react-icons/fa";
 import toast from 'react-hot-toast';
 import confetti from 'canvas-confetti';
+import { getTransformedImageUrl } from '../lib/utils';
+import { useAuth } from '../contexts/AuthContext';
 
 const getLikedPrompts = (): string[] => {
   const liked = localStorage.getItem('likedPrompts');
   return liked ? JSON.parse(liked) : [];
 };
 
+const setLikedPrompts = (liked: string[]) => {
+  localStorage.setItem('likedPrompts', JSON.stringify(liked));
+};
+
 const addLikedPrompt = (promptId: string) => {
   const liked = getLikedPrompts();
-  localStorage.setItem('likedPrompts', JSON.stringify([...liked, promptId]));
+  if (!liked.includes(promptId)) {
+    setLikedPrompts([...liked, promptId]);
+  }
+};
+
+const removeLikedPrompt = (promptId: string) => {
+  const liked = getLikedPrompts();
+  setLikedPrompts(liked.filter(id => id !== promptId));
 };
 
 interface PromptCardProps {
@@ -24,28 +37,43 @@ interface PromptCardProps {
 
 const PromptCard: React.FC<PromptCardProps> = ({ prompt }) => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   
   const [isLiked, setIsLiked] = useState(false);
   const [optimisticLikeCount, setOptimisticLikeCount] = useState(prompt.like_count);
 
   useEffect(() => {
     setIsLiked(getLikedPrompts().includes(prompt.id));
-  }, [prompt.id]);
+    setOptimisticLikeCount(prompt.like_count);
+  }, [prompt.id, prompt.like_count]);
 
   const handleView = () => {
     if (prompt.ad_direct_link_url) {
-      window.open(prompt.ad_direct_link_url, '_blank', 'noopener,noreferrer');
+      const adShownThisSession = sessionStorage.getItem(`adShown_${prompt.id}`);
+      if (!adShownThisSession) {
+        window.open(prompt.ad_direct_link_url, '_blank', 'noopener,noreferrer');
+        sessionStorage.setItem(`adShown_${prompt.id}`, 'true');
+      }
     }
     navigate(`/prompt/${prompt.id}`);
   };
 
   const handleLikeClick = async (e: React.MouseEvent) => {
     e.stopPropagation();
+    
+    if (!user) {
+        toast.error("Please log in to like prompts.");
+        // Optional: redirect to login
+        // navigate('/auth');
+        return;
+    }
+
     if (isLiked) {
         toast('You have already liked this prompt.', { icon: '😊' });
         return;
     }
 
+    // Optimistic UI Update
     setIsLiked(true);
     setOptimisticLikeCount(prev => prev + 1);
     addLikedPrompt(prompt.id);
@@ -57,14 +85,21 @@ const PromptCard: React.FC<PromptCardProps> = ({ prompt }) => {
     });
 
     const { error } = await supabase.rpc('increment_like_count', { p_prompt_id: prompt.id });
+    
     if (error) {
       console.error("Error incrementing like:", error);
-      // Note: No rollback on error to keep the UI simple for anonymous users
+      toast.error("Couldn't save your like. Please try again.");
+      
+      // Rollback on error
+      setIsLiked(false);
+      setOptimisticLikeCount(prev => prev - 1);
+      removeLikedPrompt(prompt.id);
     }
   };
 
   const creatorName = prompt.creator_name || 'Admin';
   const instagramUrl = prompt.instagram_handle ? `https://www.instagram.com/${prompt.instagram_handle.replace('@', '')}` : null;
+  const transformedImageUrl = getTransformedImageUrl(prompt.image_url, 400, 400);
 
   return (
     <motion.div
@@ -76,8 +111,15 @@ const PromptCard: React.FC<PromptCardProps> = ({ prompt }) => {
       className="group relative overflow-hidden rounded-xl shadow-soft hover:shadow-soft-lg transition-shadow duration-300 bg-white"
     >
       <div onClick={handleView} className="cursor-pointer">
-        <img src={prompt.image_url} alt={prompt.title} className="w-full h-96 object-cover transition-transform duration-500 group-hover:scale-105" />
+        <img src={transformedImageUrl} alt={prompt.title} className="w-full h-96 object-cover transition-transform duration-500 group-hover:scale-105" />
         <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
+        
+        {prompt.prompt_id && (
+          <div className="absolute top-3 left-3 bg-black/40 text-white text-xs font-bold px-2.5 py-1.5 rounded-full backdrop-blur-sm">
+            ID: {prompt.prompt_id}
+          </div>
+        )}
+
         <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
           {prompt.categories?.name && (
             <span className="inline-block bg-accent/80 text-white text-xs font-semibold px-2 py-1 rounded-full mb-2">{prompt.categories.name}</span>
@@ -108,7 +150,6 @@ const PromptCard: React.FC<PromptCardProps> = ({ prompt }) => {
           onClick={handleLikeClick}
           className={`p-2.5 rounded-full backdrop-blur-sm transition-colors duration-300 ${isLiked ? 'bg-red-500/80 text-white cursor-not-allowed' : 'bg-black/40 text-white hover:bg-black/60'}`}
           aria-label="Like prompt"
-          disabled={isLiked}
         >
           {isLiked ? <FaHeart size={16} /> : <Heart size={16} />}
         </button>

@@ -1,41 +1,41 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Sparkles, MousePointerClick, Image as ImageIcon, Bot, Film, Download } from 'lucide-react';
+import { Bot, Image as ImageIcon, Sparkles, CheckSquare, List } from 'lucide-react';
 import Button from '../components/ui/Button';
 
 const instructions = [
   {
-    icon: MousePointerClick,
-    title: "Explore & Find a Prompt",
-    description: "Browse our collection and click on a prompt you like to see the details.",
+    icon: Bot,
+    title: "Visit Luma AI Arena",
+    description: "Navigate to lmarena.ai in your web browser.",
     color: "text-sky-500",
     bg: "bg-sky-100"
   },
   {
-    icon: Sparkles,
-    title: "Copy the Prompt Text",
-    description: "On the prompt detail page, you'll find the full prompt text. Use the copy button to easily grab it.",
-    color: "text-amber-500",
-    bg: "bg-amber-100"
-  },
-  {
-    icon: Bot,
-    title: "Go to Your Favorite AI Generator",
-    description: "Open your preferred AI image generation tool, like Midjourney, Stable Diffusion, or DALL-E.",
+    icon: List,
+    title: "Choose Direct Chat",
+    description: "From the options at the top, select 'Direct Chat' to start a one-on-one session with the AI.",
     color: "text-indigo-500",
     bg: "bg-indigo-100"
   },
   {
     icon: ImageIcon,
-    title: "Paste and Generate",
-    description: "Paste the copied prompt into the text box of the AI tool and generate your image.",
+    title: "Select Image Generation",
+    description: "Click the image icon inside the prompt box to switch to image generation mode.",
+    color: "text-amber-500",
+    bg: "bg-amber-100"
+  },
+  {
+    icon: CheckSquare,
+    title: "Pick the Seedream Model",
+    description: "From the list of available models above the prompt box, find and select 'Seedream'.",
     color: "text-rose-500",
     bg: "bg-rose-100"
   },
   {
-    icon: Film,
-    title: "Enjoy Your Creation!",
-    description: "Watch as the AI transforms the words into a unique, high-quality image!",
+    icon: Sparkles,
+    title: "Paste, Generate & Enjoy!",
+    description: "Paste your prompt, hit Generate, and watch as the AI transforms your words into a 4K cinematic masterpiece.",
     color: "text-emerald-500",
     bg: "bg-emerald-100"
   }
@@ -46,7 +46,7 @@ const containerVariants = {
   visible: {
     opacity: 1,
     transition: {
-      staggerChildren: 0.2,
+      staggerChildren: 0.15,
     },
   },
 };
@@ -73,8 +73,8 @@ const InstructionsPage: React.FC = () => {
         className="bg-white rounded-xl shadow-soft p-6 sm:p-8 lg:p-10"
       >
         <div className="text-center mb-12">
-            <h1 className="text-4xl md:text-5xl font-extrabold text-dark font-display mb-4">How to Use Prompts</h1>
-            <p className="text-lg text-slate-600">Follow these simple steps to create your own AI images.</p>
+            <h1 className="text-4xl md:text-5xl font-extrabold text-dark font-display mb-4">How to Create with Seedream</h1>
+            <p className="text-lg text-slate-600">Follow these simple steps to generate your own images for free.</p>
         </div>
 
         <motion.div 
@@ -101,9 +101,9 @@ const InstructionsPage: React.FC = () => {
         </motion.div>
 
         <div className="text-center mt-12">
-            <a href="/prompts">
+            <a href="https://lmarena.ai" target="_blank" rel="noopener noreferrer">
                 <Button variant="primary">
-                    Explore Prompts Now
+                    Go to Luma Arena
                 </Button>
             </a>
         </div>

@@ -34,3 +34,11 @@
 .btn-glow-border:hover::before {
   opacity: 1;
 }
+
+.bg-grid {
+    background-color: #ffffff;
+    background-image:
+        linear-gradient(to right, #e2e8f0 1px, transparent 1px),
+        linear-gradient(to bottom, #e2e8f0 1px, transparent 1px);
+    background-size: 40px 40px;
+}

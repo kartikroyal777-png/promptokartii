@@ -1,55 +1,55 @@
-import React from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import React, { useState } from 'react';
+import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { Sparkles, Upload, DollarSign } from 'lucide-react';
 import { motion } from 'framer-motion';
 import Button from './ui/Button';
+import MonetizationGuideModal from './MonetizationGuideModal';
 
-interface HeaderProps {
-  onMonetizeClick: () => void;
-}
-
-const Header: React.FC<HeaderProps> = ({ onMonetizeClick }) => {
+const Header: React.FC = () => {
   const navigate = useNavigate();
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const navLinkClasses = "text-slate-600 hover:text-dark font-medium transition-colors";
+  const activeNavLinkClasses = "text-dark";
+
+  const getNavLinkClass = ({ isActive }: { isActive: boolean }) => 
+    `${navLinkClasses} ${isActive ? activeNavLinkClasses : ''}`;
 
   return (
-    <motion.header 
-      initial={{ y: -100 }}
-      animate={{ y: 0 }}
-      transition={{ duration: 0.5, ease: 'easeOut' }}
-      className="bg-white/80 backdrop-blur-lg border border-light rounded-2xl shadow-soft px-4 sm:px-6"
-    >
-      <div className="flex items-center justify-between h-16 md:h-20">
-        <Link to="/" className="flex items-center gap-2">
-          <Sparkles className="w-6 h-6 md:w-7 md:h-7 text-accent" />
-          <span className="text-xl md:text-2xl font-bold text-dark font-display" style={{ fontWeight: 600 }}>
-            Dollar<span className="text-accent">Prompt</span>
-          </span>
-        </Link>
-        <div className="flex items-center gap-2 md:gap-4">
-          <button 
-            onClick={onMonetizeClick}
-            className="p-2.5 rounded-full text-slate-600 hover:bg-slate-100 hover:text-dark transition-colors"
-            aria-label="How to monetize prompts"
-          >
-            <DollarSign size={20} />
-          </button>
+    <>
+      <motion.header 
+        initial={{ y: -100 }}
+        animate={{ y: 0 }}
+        transition={{ duration: 0.5, ease: 'easeOut' }}
+        className="bg-white/80 backdrop-blur-lg border border-light rounded-xl shadow-soft max-w-7xl mx-auto"
+      >
+        <div className="flex items-center justify-between h-20 px-4 sm:px-6 lg:px-8">
+          <Link to="/" className="flex items-center gap-2">
+            <Sparkles className="w-7 h-7 text-accent" />
+            <span className="text-2xl font-bold text-dark font-display" style={{ fontWeight: 600 }}>
+              Dollar<span className="text-accent">Prompt</span>
+            </span>
+          </Link>
           
-          {/* Desktop Upload Button */}
-          <Button onClick={() => navigate('/upload')} variant="primary" icon={<Upload size={16}/>} className="hidden md:flex">
-            Upload Prompt
-          </Button>
+          <nav className="hidden md:flex items-center gap-8">
+            <NavLink to="/prompts" className={getNavLinkClass}>Prompts</NavLink>
+            <NavLink to="/instructions" className={getNavLinkClass}>Instructions</NavLink>
+          </nav>
 
-          {/* Mobile Upload Button */}
-          <button 
-            onClick={() => navigate('/upload')}
-            className="md:hidden p-2.5 rounded-full text-slate-600 bg-slate-100 hover:bg-slate-200 hover:text-dark transition-colors"
-            aria-label="Upload prompt"
-          >
-            <Upload size={20} />
-          </button>
+          <div className="flex items-center gap-2 sm:gap-4">
+            <Button onClick={() => setIsModalOpen(true)} variant="outline" className="px-3 py-2 md:px-3 md:py-2" aria-label="Monetization Guide">
+              <DollarSign size={18} className="text-amber-500"/>
+              <span className="hidden sm:inline ml-2">Monetize</span>
+            </Button>
+            <Button onClick={() => navigate('/upload')} variant="primary" className="px-3 py-2 md:px-3 md:py-2" aria-label="Upload Prompt">
+              <Upload size={18} />
+              <span className="hidden sm:inline ml-2">Upload</span>
+            </Button>
+          </div>
         </div>
-      </div>
-    </motion.header>
+      </motion.header>
+      <MonetizationGuideModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
+    </>
   );
 };
 

@@ -1,12 +1,8 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { Home, LayoutGrid, PlusSquare, DollarSign, Coins } from 'lucide-react';
+import { Home, LayoutGrid, PlusSquare, BookOpen } from 'lucide-react';
 
-interface BottomNavBarProps {
-  onMonetizeClick: () => void;
-}
-
-const BottomNavBar: React.FC<BottomNavBarProps> = ({ onMonetizeClick }) => {
+const BottomNavBar: React.FC = () => {
   const commonClasses = "flex flex-col items-center justify-center gap-1 text-slate-500 transition-colors w-full h-full";
   const activeClasses = "text-accent";
 
@@ -14,8 +10,8 @@ const BottomNavBar: React.FC<BottomNavBarProps> = ({ onMonetizeClick }) => {
     `${commonClasses} ${isActive ? activeClasses : 'hover:bg-slate-100'}`;
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 bg-white/80 backdrop-blur-lg border-t border-light shadow-t-lg z-40">
-      <div className="flex justify-around h-20">
+    <div className="fixed bottom-0 left-0 right-0 bg-white/80 backdrop-blur-lg border-t border-light shadow-t-lg z-50 md:hidden">
+      <div className="grid grid-cols-4 h-20">
         <NavLink to="/" className={getLinkClass} end>
           <Home size={24} />
           <span className="text-xs font-medium">Home</span>
@@ -28,14 +24,10 @@ const BottomNavBar: React.FC<BottomNavBarProps> = ({ onMonetizeClick }) => {
           <PlusSquare size={24} />
           <span className="text-xs font-medium">Upload</span>
         </NavLink>
-        <NavLink to="/earn" className={getLinkClass}>
-          <Coins size={24} />
-          <span className="text-xs font-medium">Earn</span>
+        <NavLink to="/instructions" className={getLinkClass}>
+          <BookOpen size={24} />
+          <span className="text-xs font-medium">Guide</span>
         </NavLink>
-        <button onClick={onMonetizeClick} className={`${commonClasses} hover:bg-slate-100`}>
-          <DollarSign size={24} />
-          <span className="text-xs font-medium">Monetize</span>
-        </button>
       </div>
     </div>
   );

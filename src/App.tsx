@@ -13,7 +13,6 @@ import GlobalAdScripts from './components/GlobalAdScripts';
 import AuthPage from './pages/AuthPage';
 import AdminPage from './pages/AdminPage';
 import ProtectedRoute from './components/ProtectedRoute';
-import EarnCreditsPage from './pages/EarnCreditsPage';
 
 function App() {
   return (
@@ -29,7 +28,6 @@ function App() {
         <Route path="/about" element={<MainLayout><AboutPage /></MainLayout>} />
         <Route path="/privacy" element={<MainLayout><PrivacyPage /></MainLayout>} />
         <Route path="/terms-of-service" element={<MainLayout><TermsPage /></MainLayout>} />
-        <Route path="/earn" element={<MainLayout><EarnCreditsPage /></MainLayout>} />
         
         {/* Auth Route */}
         <Route path="/auth" element={<AuthPage />} />

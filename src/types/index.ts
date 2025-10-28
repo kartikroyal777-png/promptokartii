@@ -5,3 +5,8 @@ export type Prompt = Database['public']['Tables']['prompts']['Row'] & {
   categories: { name: string } | null;
 };
 export type HeroImage = Database['public']['Tables']['hero_images']['Row'];
+export type Profile = Database['public']['Tables']['profiles']['Row'];
+export type UnlockedPrompt = Database['public']['Tables']['unlocked_prompts']['Row'];
+export type DailyAdClaim = Database['public']['Tables']['daily_ad_claims']['Row'];
+export type DailyLinkClaim = Database['public']['Tables']['daily_link_claims']['Row'];
+export type UserCouponClaim = Database['public']['Tables']['user_coupon_claims']['Row'];

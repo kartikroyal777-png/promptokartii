@@ -5,6 +5,7 @@ import { Prompt, HeroImage, Category } from '../types';
 import Button from '../components/ui/Button';
 import { Plus, Loader, Trash2, X, Pencil } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { getTransformedImageUrl } from '../lib/utils';
 
 type AdminTab = 'prompts' | 'hero';
 
@@ -208,6 +209,8 @@ const PromptForm = ({ categories, setFormLoading, formLoading, onComplete, promp
   const [promptText, setPromptText] = useState('');
   const [instructions, setInstructions] = useState('');
   const [adDirectLinkUrl, setAdDirectLinkUrl] = useState('');
+  const [creatorName, setCreatorName] = useState('Admin');
+  const [instagramHandle, setInstagramHandle] = useState('');
 
   useEffect(() => {
     if (promptToEdit) {
@@ -216,6 +219,8 @@ const PromptForm = ({ categories, setFormLoading, formLoading, onComplete, promp
       setPromptText(promptToEdit.prompt_text);
       setInstructions(promptToEdit.instructions);
       setAdDirectLinkUrl(promptToEdit.ad_direct_link_url || '');
+      setCreatorName(promptToEdit.creator_name || 'Admin');
+      setInstagramHandle(promptToEdit.instagram_handle || '');
       setImageFile(null);
     } else {
       // Reset form when adding new
@@ -224,6 +229,8 @@ const PromptForm = ({ categories, setFormLoading, formLoading, onComplete, promp
       setPromptText('');
       setInstructions('');
       setAdDirectLinkUrl('');
+      setCreatorName('Admin');
+      setInstagramHandle('');
       setImageFile(null);
     }
   }, [promptToEdit, categories]);
@@ -241,13 +248,6 @@ const PromptForm = ({ categories, setFormLoading, formLoading, onComplete, promp
     setFormLoading(true);
     const toastId = toast.loading(promptToEdit ? 'Updating prompt...' : 'Uploading prompt...');
     
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-      toast.error("You must be logged in.", { id: toastId });
-      setFormLoading(false);
-      return;
-    }
-
     let imageUrl = promptToEdit?.image_url || '';
 
     if (imageFile) {
@@ -273,8 +273,9 @@ const PromptForm = ({ categories, setFormLoading, formLoading, onComplete, promp
       image_url: imageUrl, 
       prompt_text: promptText, 
       instructions, 
-      created_by: user.id,
-      ad_direct_link_url: adDirectLinkUrl || null
+      ad_direct_link_url: adDirectLinkUrl || null,
+      creator_name: creatorName,
+      instagram_handle: instagramHandle || null
     };
 
     if (promptToEdit) {
@@ -299,7 +300,7 @@ const PromptForm = ({ categories, setFormLoading, formLoading, onComplete, promp
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <h3 className="text-xl md:text-2xl font-bold text-dark">{promptToEdit ? 'Edit Prompt' : 'Add New Prompt'}</h3>
+      <h3 className="text-xl md:text-2xl font-bold text-dark">{promptToEdit ? `Edit Prompt (ID: ${promptToEdit.prompt_id})` : 'Add New Prompt'}</h3>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <input type="text" placeholder="Title" value={title} onChange={e => setTitle(e.target.value)} required className="w-full p-3 border border-light rounded-lg"/>
         <select 
@@ -315,6 +316,10 @@ const PromptForm = ({ categories, setFormLoading, formLoading, onComplete, promp
           {categories.map(cat => <option key={cat.id} value={cat.id}>{cat.name}</option>)}
         </select>
       </div>
+       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <input type="text" placeholder="Creator Name" value={creatorName} onChange={e => setCreatorName(e.target.value)} required className="w-full p-3 border border-light rounded-lg"/>
+          <input type="text" placeholder="Instagram Handle (e.g., @username)" value={instagramHandle} onChange={e => setInstagramHandle(e.target.value)} className="w-full p-3 border border-light rounded-lg"/>
+        </div>
       <input type="url" placeholder="Ad Direct Link URL (optional)" value={adDirectLinkUrl} onChange={e => setAdDirectLinkUrl(e.target.value)} className="w-full p-3 border border-light rounded-lg"/>
       <input type="file" accept="image/*" onChange={e => e.target.files && setImageFile(e.target.files[0])} required={!promptToEdit} className="w-full p-3 border border-light rounded-lg file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-accent/20 file:text-accent hover:file:bg-accent/30"/>
       <textarea placeholder="Prompt Text" value={promptText} onChange={e => setPromptText(e.target.value)} required rows={4} className="w-full p-3 border border-light rounded-lg"/>
@@ -334,6 +339,7 @@ const PromptsTable = ({ prompts, onEdit, onDelete }: { prompts: Prompt[], onEdit
     <table className="min-w-full divide-y divide-light">
       <thead className="bg-slate-50">
         <tr>
+          <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">ID</th>
           <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Title</th>
           <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider hidden sm:table-cell">Category</th>
           <th className="relative px-6 py-3"><span className="sr-only">Actions</span></th>
@@ -342,9 +348,10 @@ const PromptsTable = ({ prompts, onEdit, onDelete }: { prompts: Prompt[], onEdit
       <tbody className="bg-white divide-y divide-light">
         {prompts.map(prompt => (
           <tr key={prompt.id}>
+            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-500">{prompt.prompt_id}</td>
             <td className="px-6 py-4 whitespace-nowrap">
               <div className="flex items-center">
-                <div className="flex-shrink-0 h-10 w-10"><img className="h-10 w-10 rounded-md object-cover" src={prompt.image_url} alt={prompt.title} /></div>
+                <div className="flex-shrink-0 h-10 w-10"><img className="h-10 w-10 rounded-md object-cover" src={getTransformedImageUrl(prompt.image_url, 40, 40)} alt={prompt.title} /></div>
                 <div className="ml-4"><div className="text-sm font-medium text-dark">{prompt.title}</div></div>
               </div>
             </td>
@@ -451,7 +458,7 @@ const HeroImagesTable = ({ heroImages, onEdit, onDelete }: { heroImages: HeroIma
       <tbody className="bg-white divide-y divide-light">
         {heroImages.map(image => (
           <tr key={image.id}>
-            <td className="px-6 py-4"><img className="h-12 w-20 rounded-md object-cover" src={image.image_url} alt={image.alt_text} /></td>
+            <td className="px-6 py-4"><img className="h-12 w-20 rounded-md object-cover" src={getTransformedImageUrl(image.image_url, 80, 48)} alt={image.alt_text} /></td>
             <td className="px-6 py-4 whitespace-nowrap text-sm text-dark hidden sm:table-cell">{image.alt_text}</td>
             <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium flex justify-end items-center gap-4">
               <button onClick={() => onEdit(image)} className="text-slate-600 hover:text-accent"><Pencil size={18}/></button>

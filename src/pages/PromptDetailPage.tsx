@@ -8,17 +8,33 @@ import { ArrowLeft, Copy, Check, Info, Loader, Heart } from 'lucide-react';
 import { FaHeart, FaInstagram } from 'react-icons/fa';
 import toast from 'react-hot-toast';
 import confetti from 'canvas-confetti';
-import AdComponent from '../components/ads/AdComponent';
-import MobileAdBanners from '../components/ads/MobileAdBanners';
+import Ad300x250 from '../components/ads/Ad300x250';
+import Ad728x90 from '../components/ads/Ad728x90';
+import Ad160x600 from '../components/ads/Ad160x600';
+import Ad160x300 from '../components/ads/Ad160x300';
+import Ad468x60 from '../components/ads/Ad468x60';
+import Ad320x50 from '../components/ads/Ad320x50';
+import { getTransformedImageUrl } from '../lib/utils';
 
 const getLikedPrompts = (): string[] => {
     const liked = localStorage.getItem('likedPrompts');
     return liked ? JSON.parse(liked) : [];
 };
 
+const setLikedPrompts = (liked: string[]) => {
+    localStorage.setItem('likedPrompts', JSON.stringify(liked));
+};
+
 const addLikedPrompt = (promptId: string) => {
     const liked = getLikedPrompts();
-    localStorage.setItem('likedPrompts', JSON.stringify([...liked, promptId]));
+    if (!liked.includes(promptId)) {
+        setLikedPrompts([...liked, promptId]);
+    }
+};
+
+const removeLikedPrompt = (promptId: string) => {
+    const liked = getLikedPrompts();
+    setLikedPrompts(liked.filter(id => id !== promptId));
 };
 
 const PromptDetailPage: React.FC = () => {
@@ -84,6 +100,7 @@ const PromptDetailPage: React.FC = () => {
         return;
     }
 
+    // Optimistic UI Update
     setIsLiked(true);
     setOptimisticLikeCount(prev => prev + 1);
     addLikedPrompt(prompt.id);
@@ -97,6 +114,12 @@ const PromptDetailPage: React.FC = () => {
     const { error } = await supabase.rpc('increment_like_count', { p_prompt_id: prompt.id });
     if (error) {
       console.error("Error incrementing like:", error);
+      toast.error("Couldn't save your like. Please try again.");
+
+      // Rollback on error
+      setIsLiked(false);
+      setOptimisticLikeCount(prev => prev - 1);
+      removeLikedPrompt(prompt.id);
     }
   };
 
@@ -110,6 +133,7 @@ const PromptDetailPage: React.FC = () => {
 
   const creatorName = prompt.creator_name || 'Admin';
   const instagramUrl = prompt.instagram_handle ? `https://www.instagram.com/${prompt.instagram_handle.replace('@', '')}` : null;
+  const transformedImageUrl = getTransformedImageUrl(prompt.image_url, 800, 800);
 
   return (
     <>
@@ -120,7 +144,10 @@ const PromptDetailPage: React.FC = () => {
             Back to Prompts
           </Button>
           
-          <MobileAdBanners />
+          <div className="flex flex-col items-center gap-4 my-8">
+            <div className="hidden md:block"><Ad728x90 /></div>
+            <div className="md:hidden"><Ad320x50 /></div>
+          </div>
 
           <div className="bg-white p-6 sm:p-8 lg:p-10 rounded-xl shadow-soft">
               <div className="grid lg:grid-cols-5 gap-8 lg:gap-12">
@@ -130,7 +157,7 @@ const PromptDetailPage: React.FC = () => {
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ duration: 0.5 }}
               >
-                  <img src={prompt.image_url} alt={prompt.title} className="w-full h-full object-cover" />
+                  <img src={transformedImageUrl} alt={prompt.title} className="w-full h-full object-cover" />
               </motion.div>
               <div className="lg:col-span-2">
                   <motion.div
@@ -138,7 +165,10 @@ const PromptDetailPage: React.FC = () => {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5, delay: 0.2 }}
                   >
-                  {prompt.categories?.name && <span className="inline-block bg-accent/20 text-accent text-sm font-semibold px-3 py-1 rounded-full mb-3">{prompt.categories.name}</span>}
+                  <div className="flex justify-between items-start">
+                    {prompt.categories?.name && <span className="inline-block bg-accent/20 text-accent text-sm font-semibold px-3 py-1 rounded-full mb-3">{prompt.categories.name}</span>}
+                    {prompt.prompt_id && <span className="text-sm font-bold text-slate-400">ID: {prompt.prompt_id}</span>}
+                  </div>
                   <h1 className="text-3xl md:text-4xl font-extrabold text-dark font-display mb-2">{prompt.title}</h1>
                   <div className="text-slate-500 mb-6 flex items-center gap-2">
                     <span>by {creatorName}</span>
@@ -188,19 +218,15 @@ const PromptDetailPage: React.FC = () => {
                   </motion.div>
               </div>
               </div>
-               <div className="mt-8 border-t border-light pt-8">
-                <h3 className="font-bold text-slate-500 text-sm uppercase tracking-wider text-center mb-4">Advertisement</h3>
-                <div className="flex justify-center">
-                   <AdComponent 
-                    type="options" 
-                    scriptSrc="//www.highperformanceformat.com/7722c1010eb11be53a3071d7a29b9b53/invoke.js" 
-                    options={{ key: '7722c1010eb11be53a3071d7a29b9b53', format: 'iframe', height: 250, width: 300, params: {} }} 
-                    />
-                </div>
-              </div>
           </div>
-          <div className="mt-8">
-            <MobileAdBanners />
+          <div className="mt-12 border-t border-light pt-8">
+            <h3 className="font-bold text-slate-500 text-sm uppercase tracking-wider text-center mb-6">Advertisements</h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 items-center justify-center">
+                <div className="flex justify-center"><Ad300x250 /></div>
+                <div className="flex justify-center"><Ad160x300 /></div>
+                <div className="hidden sm:flex justify-center"><Ad468x60 /></div>
+                <div className="hidden lg:flex justify-center"><Ad160x600 /></div>
+            </div>
           </div>
         </div>
       </div>

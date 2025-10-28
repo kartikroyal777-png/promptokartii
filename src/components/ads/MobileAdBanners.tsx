@@ -10,9 +10,11 @@ const MobileAdBanners: React.FC = () => {
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, amount: 0.3 }}
       transition={{ duration: 0.5 }}
-      className="flex flex-col items-center gap-4 my-6 md:hidden"
+      className="flex flex-col items-center gap-4 my-6"
     >
-      <Ad320x50 />
+      <div className="md:hidden">
+        <Ad320x50 />
+      </div>
       <Ad300x250 />
     </motion.div>
   );

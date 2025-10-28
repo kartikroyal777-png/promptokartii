@@ -7,8 +7,8 @@ import { supabase } from '../lib/supabase';
 import { Prompt } from '../types';
 import PromptCard from '../components/PromptCard';
 import SearchBar from '../components/ui/SearchBar';
-import StackedBannerAds from '../components/ads/StackedBannerAds';
 import Orb from '../components/Orb';
+import MobileAdBanners from '../components/ads/MobileAdBanners';
 
 const HomePage: React.FC = () => {
   const navigate = useNavigate();
@@ -40,8 +40,8 @@ const HomePage: React.FC = () => {
 
   return (
     <>
-      <div className="w-full relative flex items-center justify-center pt-16 pb-4 md:pt-20">
-        <div className="absolute inset-0 z-[-1] opacity-50 pointer-events-none">
+      <div className="w-full relative flex items-center justify-center pt-16 pb-12 md:pt-20">
+        <div className="absolute inset-0 z-[-1] pointer-events-none">
             <Orb hue={200} hoverIntensity={0.5} />
         </div>
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 z-10">
@@ -55,7 +55,7 @@ const HomePage: React.FC = () => {
                 Dollar<span className="text-accent">Prompt</span>
               </h1>
               <p className="text-lg sm:text-xl md:text-2xl text-slate-600 mb-8 max-w-lg mx-auto">
-                Monetize your prompts.
+                Monetize your prompts with <strong className="text-accent bg-accent/10 px-2 py-1 rounded-md">0% commission</strong>.
               </p>
             </motion.div>
             <motion.div
@@ -85,14 +85,7 @@ const HomePage: React.FC = () => {
 
       <div className="py-20 bg-white">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, amount: 0.3 }}
-            transition={{ duration: 0.5 }}
-          >
-            <StackedBannerAds />
-          </motion.div>
+          <MobileAdBanners />
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}

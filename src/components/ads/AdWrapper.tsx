@@ -11,18 +11,24 @@ const AdWrapper: React.FC<AdWrapperProps> = ({ options, scriptSrc, style, classN
   const adContainerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (adContainerRef.current && adContainerRef.current.children.length === 0) {
-      const script = document.createElement('script');
-      script.type = 'text/javascript';
-      
+    const container = adContainerRef.current;
+    if (container && container.children.length === 0) {
       const atOptionsScript = document.createElement('script');
       atOptionsScript.type = 'text/javascript';
       atOptionsScript.innerHTML = `atOptions = ${JSON.stringify(options)};`;
 
+      const script = document.createElement('script');
+      script.type = 'text/javascript';
       script.src = scriptSrc;
 
-      adContainerRef.current.appendChild(atOptionsScript);
-      adContainerRef.current.appendChild(script);
+      container.appendChild(atOptionsScript);
+      container.appendChild(script);
+      
+      return () => {
+        if (container) {
+          container.innerHTML = '';
+        }
+      };
     }
   }, [options, scriptSrc]);
 

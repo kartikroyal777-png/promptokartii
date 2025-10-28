@@ -1,45 +1,27 @@
 import React from 'react';
-import AdComponent from './AdComponent';
+import Ad160x600 from './Ad160x600';
+import Ad300x250 from './Ad300x250';
+import Ad160x300 from './Ad160x300';
 
 const DesktopAdSidebar: React.FC = () => {
   return (
     <aside className="hidden md:block w-80 flex-shrink-0 p-4 sticky top-28 h-[calc(100vh-13rem)]">
-      <div className="flex flex-col items-center justify-around gap-6 h-full overflow-y-auto rounded-lg bg-white/50 p-4 border border-light">
+      <div className="flex flex-col items-center justify-start gap-6 h-full overflow-y-auto rounded-lg bg-white/50 p-4 border border-light">
         <h3 className="font-bold text-slate-500 text-sm uppercase tracking-wider">Advertisement</h3>
         
         <div className="min-h-[250px] w-full flex items-center justify-center">
-            <AdComponent 
-            type="options" 
-            scriptSrc="//www.highperformanceformat.com/7722c1010eb11be53a3071d7a29b9b53/invoke.js" 
-            options={{ key: '7722c1010eb11be53a3071d7a29b9b53', format: 'iframe', height: 250, width: 300, params: {} }} 
-            />
+          <Ad300x250 />
         </div>
         
         <div className="min-h-[300px] w-full flex items-center justify-center">
-            <AdComponent 
-            type="options" 
-            scriptSrc="//www.highperformanceformat.com/046a12f5f7578ace4d71f8efc61ce779/invoke.js" 
-            options={{ key: '046a12f5f7578ace4d71f8efc61ce779', format: 'iframe', height: 300, width: 160, params: {} }} 
-            />
-        </div>
-        
-        <div className="min-h-[60px] w-full flex items-center justify-center">
-            <AdComponent 
-            type="options" 
-            scriptSrc="//www.highperformanceformat.com/bfd6ce59842e7a37b3d4212cfb7774d5/invoke.js" 
-            options={{ key: 'bfd6ce59842e7a37b3d4212cfb7774d5', format: 'iframe', height: 60, width: 468, params: {} }} 
-            />
+          <Ad160x300 />
         </div>
 
-        <div className="min-h-[90px] w-full flex items-center justify-center">
-            <AdComponent 
-            type="options" 
-            scriptSrc="//www.highperformanceformat.com/336a43554e25b2330d93dfe8a5251632/invoke.js" 
-            options={{ key: '336a43554e25b2330d93dfe8a5251632', format: 'iframe', height: 90, width: 728, params: {} }} 
-            />
+        <div className="min-h-[600px] w-full flex items-center justify-center">
+          <Ad160x600 />
         </div>
         
-        <div className="text-center text-xs text-slate-400 p-2">
+        <div className="text-center text-xs text-slate-400 p-2 mt-auto">
             Ads help keep DollarPrompt free.
         </div>
       </div>

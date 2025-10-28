@@ -6,7 +6,8 @@ import { supabase } from '../lib/supabase';
 import { Prompt, Category } from '../types';
 import { Loader, AlertTriangle } from 'lucide-react';
 import SearchBar from '../components/ui/SearchBar';
-import StackedBannerAds from '../components/ads/StackedBannerAds';
+import MobileAdBanners from '../components/ads/MobileAdBanners';
+import AdComponent from '../components/ads/AdComponent';
 
 const PromptsPage: React.FC = () => {
   const [searchParams] = useSearchParams();
@@ -75,6 +76,15 @@ const PromptsPage: React.FC = () => {
             <h1 className="text-4xl md:text-5xl font-extrabold text-dark font-display mb-4">Explore Prompts</h1>
             <p className="text-lg text-slate-600">Find inspiration for your next AI masterpiece.</p>
         </div>
+        
+        <div className="hidden md:flex justify-center my-8">
+             <AdComponent 
+                type="options" 
+                scriptSrc="//www.highperformanceformat.com/336a43554e25b2330d93dfe8a5251632/invoke.js" 
+                options={{ key: '336a43554e25b2330d93dfe8a5251632', format: 'iframe', height: 90, width: 728, params: {} }} 
+            />
+        </div>
+        <MobileAdBanners />
 
         <div className="max-w-2xl mx-auto mb-8">
           <SearchBar 
@@ -111,15 +121,6 @@ const PromptsPage: React.FC = () => {
             ))}
         </div>
         
-        <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, amount: 0.3 }}
-            transition={{ duration: 0.5 }}
-        >
-            <StackedBannerAds />
-        </motion.div>
-
         {loading && <div className="text-center py-10"><Loader className="w-8 h-8 animate-spin text-accent mx-auto" /></div>}
         
         {error && (
@@ -149,6 +150,16 @@ const PromptsPage: React.FC = () => {
             </AnimatePresence>
             </motion.div>
         )}
+
+        <div className="hidden md:flex justify-center my-8">
+             <AdComponent 
+                type="options" 
+                scriptSrc="//www.highperformanceformat.com/bfd6ce59842e7a37b3d4212cfb7774d5/invoke.js" 
+                options={{ key: 'bfd6ce59842e7a37b3d4212cfb7774d5', format: 'iframe', height: 60, width: 468, params: {} }} 
+            />
+        </div>
+        <MobileAdBanners />
+
       </motion.div>
     </div>
   );

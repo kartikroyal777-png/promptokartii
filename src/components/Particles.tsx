@@ -235,6 +235,11 @@ const Particles: React.FC<ParticlesProps> = ({
             // ignore if already removed
         }
       }
+      try {
+        gl.getExtension('WEBGL_lose_context')?.loseContext();
+      } catch (e) {
+        // Context might already be lost
+      }
     };
   }, [
     particleCount,

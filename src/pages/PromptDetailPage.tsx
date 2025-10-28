@@ -5,11 +5,11 @@ import { supabase } from '../lib/supabase';
 import { Prompt } from '../types';
 import Button from '../components/ui/Button';
 import { ArrowLeft, Copy, Check, Info, Loader, Heart } from 'lucide-react';
-import StackedBannerAds from '../components/ads/StackedBannerAds';
 import { FaHeart, FaInstagram } from 'react-icons/fa';
 import toast from 'react-hot-toast';
 import confetti from 'canvas-confetti';
 import AdComponent from '../components/ads/AdComponent';
+import MobileAdBanners from '../components/ads/MobileAdBanners';
 
 const getLikedPrompts = (): string[] => {
     const liked = localStorage.getItem('likedPrompts');
@@ -119,14 +119,9 @@ const PromptDetailPage: React.FC = () => {
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back to Prompts
           </Button>
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, amount: 0.3 }}
-            transition={{ duration: 0.5 }}
-          >
-            <StackedBannerAds />
-          </motion.div>
+          
+          <MobileAdBanners />
+
           <div className="bg-white p-6 sm:p-8 lg:p-10 rounded-xl shadow-soft">
               <div className="grid lg:grid-cols-5 gap-8 lg:gap-12">
               <motion.div 
@@ -198,11 +193,14 @@ const PromptDetailPage: React.FC = () => {
                 <div className="flex justify-center">
                    <AdComponent 
                     type="options" 
-                    scriptSrc="//www.highperformanceformat.com/336a43554e25b2330d93dfe8a5251632/invoke.js" 
-                    options={{ key: '336a43554e25b2330d93dfe8a5251632', format: 'iframe', height: 90, width: 728, params: {} }} 
+                    scriptSrc="//www.highperformanceformat.com/7722c1010eb11be53a3071d7a29b9b53/invoke.js" 
+                    options={{ key: '7722c1010eb11be53a3071d7a29b9b53', format: 'iframe', height: 250, width: 300, params: {} }} 
                     />
                 </div>
               </div>
+          </div>
+          <div className="mt-8">
+            <MobileAdBanners />
           </div>
         </div>
       </div>

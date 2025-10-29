@@ -21,12 +21,12 @@ const Header: React.FC = () => {
         initial={{ y: -100 }}
         animate={{ y: 0 }}
         transition={{ duration: 0.5, ease: 'easeOut' }}
-        className="bg-white/80 backdrop-blur-lg border border-light rounded-xl shadow-soft max-w-7xl mx-auto"
+        className="bg-white/80 backdrop-blur-lg border border-light rounded-xl shadow-soft max-w-6xl mx-auto"
       >
-        <div className="flex items-center justify-between h-20 px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between h-16 px-4 sm:px-6 lg:px-8">
           <Link to="/" className="flex items-center gap-2">
-            <Sparkles className="w-7 h-7 text-accent" />
-            <span className="text-2xl font-bold text-dark font-display" style={{ fontWeight: 600 }}>
+            <Sparkles className="w-6 h-6 text-accent" />
+            <span className="text-xl font-bold text-dark font-display" style={{ fontWeight: 600 }}>
               Dollar<span className="text-accent">Prompt</span>
             </span>
           </Link>

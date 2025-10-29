@@ -3,7 +3,6 @@ import { supabase } from '../lib/supabase';
 import { useAuth } from './AuthContext';
 import { Profile, UnlockedPrompt, DailyAdClaim, DailyLinkClaim, UserCouponClaim } from '../types';
 import toast from 'react-hot-toast';
-import confetti from 'canvas-confetti';
 
 interface ProfileContextType {
   profile: Profile | null;
@@ -139,7 +138,6 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
       toast.error(error.message, { id: toastId });
     } else {
       toast.success("Reward claimed! +3 credits added.", { id: toastId });
-      confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
     }
   };
 
@@ -162,7 +160,6 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
       toast.error(error.message, { id: toastId });
     } else {
       toast.success("Reward claimed! +10 credits added.", { id: toastId });
-      confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
     }
   };
 
@@ -196,7 +193,6 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
       }
     } else {
       toast.success("Reward claimed! +1 credit added.", { id: toastId });
-      confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
     }
   };
 
@@ -226,7 +222,6 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
         }]);
 
         toast.success(`Redeemed! +${credits_awarded} credits added.`, { id: toastId });
-        confetti({ particleCount: 150, spread: 90, origin: { y: 0.6 } });
       } else {
         toast.error("Invalid or already used code.", { id: toastId });
       }

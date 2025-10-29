@@ -6,9 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { FaHeart, FaInstagram } from "react-icons/fa";
 import toast from 'react-hot-toast';
-import confetti from 'canvas-confetti';
 import { getTransformedImageUrl } from '../lib/utils';
-import { useAuth } from '../contexts/AuthContext';
 
 const getLikedPrompts = (): string[] => {
   const liked = localStorage.getItem('likedPrompts');
@@ -26,18 +24,12 @@ const addLikedPrompt = (promptId: string) => {
   }
 };
 
-const removeLikedPrompt = (promptId: string) => {
-  const liked = getLikedPrompts();
-  setLikedPrompts(liked.filter(id => id !== promptId));
-};
-
 interface PromptCardProps {
   prompt: Prompt;
 }
 
 const PromptCard: React.FC<PromptCardProps> = ({ prompt }) => {
   const navigate = useNavigate();
-  const { user } = useAuth();
   
   const [isLiked, setIsLiked] = useState(false);
   const [optimisticLikeCount, setOptimisticLikeCount] = useState(prompt.like_count);
@@ -60,13 +52,6 @@ const PromptCard: React.FC<PromptCardProps> = ({ prompt }) => {
 
   const handleLikeClick = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    
-    if (!user) {
-        toast.error("Please log in to like prompts.");
-        // Optional: redirect to login
-        // navigate('/auth');
-        return;
-    }
 
     if (isLiked) {
         toast('You have already liked this prompt.', { icon: '😊' });
@@ -78,22 +63,15 @@ const PromptCard: React.FC<PromptCardProps> = ({ prompt }) => {
     setOptimisticLikeCount(prev => prev + 1);
     addLikedPrompt(prompt.id);
     
-    confetti({
-        particleCount: 100,
-        spread: 70,
-        origin: { y: 0.6 }
-    });
+    toast.success('Liked!', { icon: '❤️' });
 
+    // We'll call the RPC but won't handle the error visibly to allow for anonymous "likes"
+    // The backend RLS policy determines if this actually succeeds.
     const { error } = await supabase.rpc('increment_like_count', { p_prompt_id: prompt.id });
     
     if (error) {
-      console.error("Error incrementing like:", error);
-      toast.error("Couldn't save your like. Please try again.");
-      
-      // Rollback on error
-      setIsLiked(false);
-      setOptimisticLikeCount(prev => prev - 1);
-      removeLikedPrompt(prompt.id);
+      console.error("Error incrementing like count (user may be anonymous):", error.message);
+      // No rollback or user-facing error to provide a seamless "anonymous like" experience.
     }
   };
 

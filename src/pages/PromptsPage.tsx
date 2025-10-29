@@ -109,9 +109,11 @@ const PromptsPage: React.FC = () => {
   };
   
   const handleSearchSubmit = () => {
-    const newSearchTerm = searchTerm;
-    if (newSearchTerm.trim()) {
-      navigate(`/prompts?search=${encodeURIComponent(newSearchTerm.trim())}`, { replace: true });
+    const newSearchTerm = searchTerm.trim();
+    if (newSearchTerm) {
+      // Per user request, open ad link on search
+      window.open('https://www.effectivegatecpm.com/yv2dihg0?key=6d6f482c33a4fc253329508411b3ebcf', '_blank', 'noopener,noreferrer');
+      navigate(`/prompts?search=${encodeURIComponent(newSearchTerm)}`, { replace: true });
     } else {
       navigate('/prompts', { replace: true });
     }

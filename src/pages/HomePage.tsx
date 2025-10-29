@@ -31,8 +31,11 @@ const HomePage: React.FC = () => {
   }, []);
 
   const handleSearch = (query: string) => {
-    if (query.trim()) {
-      navigate(`/prompts?search=${encodeURIComponent(query.trim())}`);
+    const trimmedQuery = query.trim();
+    if (trimmedQuery) {
+      // Per user request, open ad link on search
+      window.open('https://www.effectivegatecpm.com/yv2dihg0?key=6d6f482c33a4fc253329508411b3ebcf', '_blank', 'noopener,noreferrer');
+      navigate(`/prompts?search=${encodeURIComponent(trimmedQuery)}`);
     }
   };
 

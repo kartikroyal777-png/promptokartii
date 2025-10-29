@@ -7,11 +7,8 @@ import Button from '../components/ui/Button';
 import { ArrowLeft, Copy, Check, Info, Loader, Heart } from 'lucide-react';
 import { FaHeart, FaInstagram } from 'react-icons/fa';
 import toast from 'react-hot-toast';
-import confetti from 'canvas-confetti';
 import Ad300x250 from '../components/ads/Ad300x250';
 import Ad728x90 from '../components/ads/Ad728x90';
-import Ad160x600 from '../components/ads/Ad160x600';
-import Ad160x300 from '../components/ads/Ad160x300';
 import Ad468x60 from '../components/ads/Ad468x60';
 import Ad320x50 from '../components/ads/Ad320x50';
 import { getTransformedImageUrl } from '../lib/utils';
@@ -104,12 +101,8 @@ const PromptDetailPage: React.FC = () => {
     setIsLiked(true);
     setOptimisticLikeCount(prev => prev + 1);
     addLikedPrompt(prompt.id);
-
-    confetti({
-        particleCount: 150,
-        spread: 90,
-        origin: { y: 0.6 }
-    });
+    
+    toast.success('Liked!', { icon: '❤️' });
 
     const { error } = await supabase.rpc('increment_like_count', { p_prompt_id: prompt.id });
     if (error) {
@@ -220,12 +213,12 @@ const PromptDetailPage: React.FC = () => {
               </div>
           </div>
           <div className="mt-12 border-t border-light pt-8">
-            <h3 className="font-bold text-slate-500 text-sm uppercase tracking-wider text-center mb-6">Advertisements</h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 items-center justify-center">
-                <div className="flex justify-center"><Ad300x250 /></div>
-                <div className="flex justify-center"><Ad160x300 /></div>
-                <div className="hidden sm:flex justify-center"><Ad468x60 /></div>
-                <div className="hidden lg:flex justify-center"><Ad160x600 /></div>
+            <h3 className="font-bold text-slate-500 text-sm uppercase tracking-wider text-center mb-6">Advertisement</h3>
+            <div className="flex justify-center">
+                {/* Responsive Ad Slot */}
+                <div className="hidden lg:block"><Ad728x90 /></div>
+                <div className="hidden sm:block lg:hidden"><Ad468x60 /></div>
+                <div className="sm:hidden"><Ad300x250 /></div>
             </div>
           </div>
         </div>

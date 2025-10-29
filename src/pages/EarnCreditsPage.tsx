@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Gift, Coins, CheckCircle, Loader, Send, ExternalLink, Ticket } from 'lucide-react';
+import { Gift, CheckCircle, Loader, ExternalLink, Ticket } from 'lucide-react';
 import Button from '../components/ui/Button';
 import { useProfile } from '../contexts/ProfileContext';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import { useAd } from '../contexts/AdContext';
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -30,11 +29,9 @@ const itemVariants = {
 };
 
 const EarnCreditsPage: React.FC = () => {
-  const { profile, dailyAdClaims, dailyLinkClaims, loadingProfile, claimTelegramReward, claimLinkReward, claimCouponReward } = useProfile();
+  const { dailyLinkClaims, loadingProfile, claimLinkReward, claimCouponReward } = useProfile();
   const { user, loading: authLoading } = useAuth();
-  const { claimReward: claimAdReward, isAdReady, isClaiming } = useAd();
   const navigate = useNavigate();
-  const [claimingTelegram, setClaimingTelegram] = useState(false);
   const [claimingLink, setClaimingLink] = useState<number | null>(null);
   const [couponCode, setCouponCode] = useState('');
   const [isRedeeming, setIsRedeeming] = useState(false);
@@ -55,12 +52,6 @@ const EarnCreditsPage: React.FC = () => {
     );
   }
 
-  const adRewards = [
-    { slot: 1, amount: 3, title: "Daily Reward #1" },
-    { slot: 2, amount: 3, title: "Daily Reward #2" },
-    { slot: 3, amount: 3, title: "Daily Reward #3" },
-  ];
-
   const directLinks = [
     { id: 1, url: 'https://www.effectivegatecpm.com/yv2dihg0?key=6d6f482c33a4fc253329508411b3ebcf' },
     { id: 2, url: 'https://www.effectivegatecpm.com/dqdi4per7?key=28d5c65d01f3ff9eb728e9b36b0a2c91' },
@@ -73,19 +64,6 @@ const EarnCreditsPage: React.FC = () => {
     { id: 9, url: 'https://www.effectivegatecpm.com/z4qutykyzi?key=ae55038489a5bf8ed466adf7456587f4' },
     { id: 10, url: 'https://www.effectivegatecpm.com/im4kym18j6?key=63c870b394075eafae85c86303ef0f2a' },
   ];
-
-  const handleClaimTelegram = async () => {
-    setClaimingTelegram(true);
-    window.open('https://t.me/+2kmMIBggTIsxNzc1', '_blank');
-    await claimTelegramReward();
-    setClaimingTelegram(false);
-  };
-
-  const handleClaimAd = (slot: number) => {
-    const isClaimed = dailyAdClaims.some(c => c.reward_slot === slot);
-    if (isClaimed || loadingProfile || !isAdReady || isClaiming) return;
-    claimAdReward(slot);
-  };
   
   const handleClaimLink = async (linkId: number, url: string) => {
     setClaimingLink(linkId);
@@ -101,8 +79,8 @@ const EarnCreditsPage: React.FC = () => {
     setIsRedeeming(false);
   };
 
-  const totalClaimed = dailyAdClaims.length + dailyLinkClaims.length;
-  const totalAvailable = adRewards.length + directLinks.length;
+  const totalClaimed = dailyLinkClaims.length;
+  const totalAvailable = directLinks.length;
   const mobileButtonClass = "px-3 py-1.5 text-xs sm:px-4 sm:py-2 sm:text-sm whitespace-nowrap";
 
   return (
@@ -133,43 +111,6 @@ const EarnCreditsPage: React.FC = () => {
             initial="hidden"
             animate="visible"
           >
-            <motion.div
-              variants={itemVariants}
-              className={`p-6 rounded-xl border-2 flex items-center justify-between transition-all ${
-                profile?.has_claimed_telegram_reward ? 'bg-slate-100 border-slate-200' : 'bg-sky-50 border-sky-200'
-              }`}
-            >
-              <div className="flex items-center gap-4">
-                <div className={`flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center ${
-                  profile?.has_claimed_telegram_reward ? 'bg-slate-200' : 'bg-sky-100'
-                }`}>
-                  <Send className={`w-6 h-6 ${profile?.has_claimed_telegram_reward ? 'text-slate-500' : 'text-sky-500'}`} />
-                </div>
-                <div>
-                  <h3 className="text-xl font-bold text-dark">Join our Telegram</h3>
-                  <p className="text-slate-600 font-bold text-lg">+10 Credits</p>
-                </div>
-              </div>
-              <Button
-                onClick={handleClaimTelegram}
-                disabled={profile?.has_claimed_telegram_reward || claimingTelegram}
-                variant={profile?.has_claimed_telegram_reward ? 'secondary' : 'primary'}
-                className={`${mobileButtonClass} ${
-                  profile?.has_claimed_telegram_reward 
-                  ? 'bg-slate-300 hover:bg-slate-300 text-slate-500 cursor-not-allowed' 
-                  : 'bg-sky-500 hover:bg-sky-600'
-                }`}
-              >
-                {profile?.has_claimed_telegram_reward ? (
-                  <CheckCircle size={20} />
-                ) : claimingTelegram ? (
-                  <Loader className="animate-spin" size={20} />
-                ) : (
-                  'Join & Claim'
-                )}
-              </Button>
-            </motion.div>
-
             {directLinks.map(link => {
               const isClaimed = dailyLinkClaims.some(c => c.link_id === link.id);
               const isThisOneClaiming = claimingLink === link.id;
@@ -194,56 +135,12 @@ const EarnCreditsPage: React.FC = () => {
                   </div>
                   <Button
                     onClick={() => handleClaimLink(link.id, link.url)}
-                    disabled={isClaimed || !!claimingLink || !!isClaiming}
+                    disabled={isClaimed || !!claimingLink}
                     variant={isClaimed ? 'secondary' : 'primary'}
                     className={`${mobileButtonClass} ${
-                      isClaimed || !!claimingLink || !!isClaiming
+                      isClaimed || !!claimingLink
                         ? 'bg-slate-300 hover:bg-slate-300 text-slate-500 cursor-not-allowed'
                         : 'bg-emerald-500 hover:bg-emerald-600'
-                    }`}
-                  >
-                    {isClaimed ? (
-                      <CheckCircle size={20} />
-                    ) : isThisOneClaiming ? (
-                      <Loader className="animate-spin" size={20} />
-                    ) : (
-                      'Claim'
-                    )}
-                  </Button>
-                </motion.div>
-              );
-            })}
-
-            {adRewards.map(reward => {
-              const isClaimed = dailyAdClaims.some(c => c.reward_slot === reward.slot);
-              const isThisOneClaiming = isClaiming === reward.slot;
-              return (
-                <motion.div
-                  key={reward.slot}
-                  variants={itemVariants}
-                  className={`p-6 rounded-xl border-2 flex items-center justify-between transition-all ${
-                    isClaimed ? 'bg-slate-100 border-slate-200' : 'bg-amber-50 border-amber-200'
-                  }`}
-                >
-                  <div className="flex items-center gap-4">
-                    <div className={`flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center ${
-                      isClaimed ? 'bg-slate-200' : 'bg-amber-100'
-                    }`}>
-                      <Coins className={`w-6 h-6 ${isClaimed ? 'text-slate-500' : 'text-amber-500'}`} />
-                    </div>
-                    <div>
-                      <h3 className="text-xl font-bold text-dark">{reward.title}</h3>
-                      <p className="text-slate-600 font-bold text-lg">+{reward.amount} Credits</p>
-                    </div>
-                  </div>
-                  <Button
-                    onClick={() => handleClaimAd(reward.slot)}
-                    disabled={isClaimed || !isAdReady || !!isClaiming || !!claimingLink}
-                    variant={isClaimed ? 'secondary' : 'primary'}
-                    className={`${mobileButtonClass} ${
-                      isClaimed || !isAdReady || !!isClaiming || !!claimingLink
-                        ? 'bg-slate-300 hover:bg-slate-300 text-slate-500 cursor-not-allowed'
-                        : 'bg-amber-500 hover:bg-amber-600'
                     }`}
                   >
                     {isClaimed ? (

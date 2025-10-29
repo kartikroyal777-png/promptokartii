@@ -6,14 +6,12 @@ import { Toaster } from 'react-hot-toast';
 import './index.css';
 import { AuthProvider } from './contexts/AuthContext.tsx';
 import { ProfileProvider } from './contexts/ProfileContext.tsx';
-import { AdProvider } from './contexts/AdContext.tsx';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <Router>
       <AuthProvider>
         <ProfileProvider>
-          <AdProvider>
             <App />
             <Toaster
               position="top-center"
@@ -26,7 +24,6 @@ createRoot(document.getElementById('root')!).render(
                 },
               }}
             />
-          </AdProvider>
         </ProfileProvider>
       </AuthProvider>
     </Router>

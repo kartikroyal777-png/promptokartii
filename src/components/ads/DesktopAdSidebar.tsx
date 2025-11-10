@@ -22,7 +22,7 @@ const DesktopAdSidebar: React.FC = () => {
         </div>
         
         <div className="text-center text-xs text-slate-400 p-2 mt-auto">
-            Ads help keep DollarPrompt free.
+            Ads help keep OG Prompts free.
         </div>
       </div>
     </aside>

@@ -1,94 +1,117 @@
-import { useState } from 'react';
-import { supabase } from '../lib/supabase';
-import { useNavigate } from 'react-router-dom';
-import { Button } from '../components/ui/Button';
-import { Orb } from '../components/Orb';
+import { useState, FormEvent } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
+import Button from '../components/ui/Button';
+import Orb from '../components/Orb';
+import { Loader, Sparkles } from 'lucide-react';
+import { motion } from 'framer-motion';
 
-const AdminLoginPage = () => {
+export function AdminLoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const { signInWithPassword } = useAuth();
   const navigate = useNavigate();
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleLogin = async (e: FormEvent) => {
     e.preventDefault();
-    setLoading(true);
     setError(null);
-
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-
-    if (error) {
-      setError(error.message);
-    } else {
+    setLoading(true);
+    try {
+      const { error } = await signInWithPassword({ email, password });
+      if (error) {
+        throw error;
+      }
+      // The onAuthStateChange in AuthContext will handle navigation
       navigate('/admin');
+    } catch (err: any) {
+      setError(err.message || 'An unexpected error occurred.');
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   return (
-    <div className="min-h-screen bg-gray-900 flex items-center justify-center p-4 relative overflow-hidden">
-      <Orb className="absolute top-0 left-0 w-96 h-96" />
-      <Orb className="absolute bottom-0 right-0 w-96 h-96" />
-      <div className="w-full max-w-md z-10">
-        <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-2xl p-8 shadow-2xl shadow-purple-500/10">
-          <h2 className="text-3xl font-bold text-center text-white mb-2">
-            Admin Login
-          </h2>
-          <p className="text-center text-gray-400 mb-8">
-            Access the admin dashboard.
-          </p>
-          <form onSubmit={handleLogin} className="space-y-6">
-            <div>
-              <label
-                htmlFor="email"
-                className="block text-sm font-medium text-gray-300"
-              >
-                Email Address
-              </label>
-              <input
-                id="email"
-                name="email"
-                type="email"
-                autoComplete="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="mt-1 block w-full px-3 py-2 bg-gray-900 border border-gray-700 rounded-md text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
-              />
-            </div>
-            <div>
-              <label
-                htmlFor="password"
-                className="block text-sm font-medium text-gray-300"
-              >
-                Password
-              </label>
-              <input
-                id="password"
-                name="password"
-                type="password"
-                autoComplete="current-password"
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="mt-1 block w-full px-3 py-2 bg-gray-900 border border-gray-700 rounded-md text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
-              />
-            </div>
-            {error && <p className="text-red-400 text-sm">{error}</p>}
-            <div>
-              <Button type="submit" className="w-full" disabled={loading}>
-                {loading ? 'Signing In...' : 'Sign In'}
-              </Button>
-            </div>
-          </form>
-        </div>
+    <div className="relative flex items-center justify-center min-h-screen bg-gray-900 text-white overflow-hidden p-4">
+      <div className="absolute top-[-20%] left-[-20%] w-[600px] h-[600px] opacity-20">
+        <Orb hue={240} />
       </div>
+      <div className="absolute bottom-[-20%] right-[-20%] w-[500px] h-[500px] opacity-20">
+        <Orb hue={280} />
+      </div>
+
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, ease: 'easeOut' }}
+        className="relative z-10 w-full max-w-md p-8 space-y-8 bg-gray-800/50 backdrop-blur-lg border border-gray-700 rounded-2xl shadow-2xl shadow-accent/10"
+      >
+        <div className="text-center">
+            <Link to="/" className="flex items-center justify-center gap-2 mb-4">
+              <Sparkles className="w-7 h-7 text-accent" />
+              <span className="text-2xl font-bold text-white font-display">
+                OG<span className="text-accent">Prompts</span>
+              </span>
+            </Link>
+          <h1 className="text-3xl font-bold tracking-tight">Admin Login</h1>
+          <p className="mt-2 text-gray-400">Access the OG Prompts dashboard.</p>
+        </div>
+        
+        <form onSubmit={handleLogin} className="space-y-6">
+          <div className="space-y-2">
+            <label htmlFor="email" className="text-sm font-medium text-gray-300">
+              Email
+            </label>
+            <input
+              id="email"
+              name="email"
+              type="email"
+              autoComplete="email"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="w-full px-4 py-3 bg-gray-900/70 border border-gray-700 rounded-lg focus:ring-2 focus:ring-accent focus:border-accent outline-none transition-all duration-200"
+              placeholder="admin@ogprompts.com"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <label
+              htmlFor="password"
+              className="text-sm font-medium text-gray-300"
+            >
+              Password
+            </label>
+            <input
+              id="password"
+              name="password"
+              type="password"
+              autoComplete="current-password"
+              required
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full px-4 py-3 bg-gray-900/70 border border-gray-700 rounded-lg focus:ring-2 focus:ring-accent focus:border-accent outline-none transition-all duration-200"
+              placeholder="••••••••"
+            />
+          </div>
+
+          {error && (
+            <p className="text-sm text-red-400 text-center">{error}</p>
+          )}
+
+          <div>
+            <Button
+              type="submit"
+              variant="primary"
+              className="w-full text-base font-semibold"
+              disabled={loading}
+            >
+              {loading ? <Loader className="animate-spin" /> : 'Login'}
+            </Button>
+          </div>
+        </form>
+      </motion.div>
     </div>
   );
-};
-
-export default AdminLoginPage;
+}

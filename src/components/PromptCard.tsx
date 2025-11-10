@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Eye, Heart } from 'lucide-react';
 import { Prompt } from '../types';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { FaHeart, FaInstagram } from "react-icons/fa";
 import toast from 'react-hot-toast';
@@ -47,7 +47,7 @@ const PromptCard: React.FC<PromptCardProps> = ({ prompt }) => {
         sessionStorage.setItem(`adShown_${prompt.id}`, 'true');
       }
     }
-    navigate(`/prompt/${prompt.id}`);
+    navigate(`/prompts/${prompt.id}`);
   };
 
   const handleLikeClick = async (e: React.MouseEvent) => {
@@ -104,7 +104,15 @@ const PromptCard: React.FC<PromptCardProps> = ({ prompt }) => {
           )}
           <h3 className="text-lg font-bold font-display truncate">{prompt.title}</h3>
           <div className="text-sm text-slate-200 mt-1 flex items-center gap-2">
-            <span>by {creatorName}</span>
+            <span>by 
+              <Link 
+                to={`/creator/${encodeURIComponent(creatorName)}`} 
+                onClick={(e) => e.stopPropagation()}
+                className="font-semibold hover:underline ml-1"
+              >
+                {creatorName}
+              </Link>
+            </span>
             {instagramUrl && (
               <a href={instagramUrl} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="hover:text-pink-400 transition-colors">
                 <FaInstagram />

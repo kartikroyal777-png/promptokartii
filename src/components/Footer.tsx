@@ -14,7 +14,7 @@ const Footer: React.FC = () => {
             <Link to="/" className="flex items-center gap-2 mb-4">
               <Sparkles className="w-7 h-7 text-accent" />
               <span className="text-2xl font-bold text-dark font-display">
-                Dollar<span className="text-accent">Prompt</span>
+                OG<span className="text-accent">Prompts</span>
               </span>
             </Link>
             <p className="text-slate-600 max-w-xs">
@@ -55,7 +55,7 @@ const Footer: React.FC = () => {
           </div>
         </div>
         <div className="mt-16 pt-8 border-t border-light text-center text-slate-500 text-sm">
-          &copy; {year} DollarPrompt. A project by Kartik Kumawat.
+          &copy; {year} OG Prompts. A project by Kartik Kumawat.
         </div>
       </div>
     </footer>

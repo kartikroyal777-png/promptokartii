@@ -9,6 +9,7 @@ interface AuthContextType {
   loading: boolean;
   isAdmin: boolean;
   signOut: () => void;
+  signInWithPassword: typeof supabase.auth.signInWithPassword;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -29,10 +30,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const isAdminUser = user.email === 'kartikroyal777@gmail.com';
     setIsAdmin(isAdminUser);
     
-    // More robust way: check 'role' from 'profiles' table
-    // const { data } = await supabase.from('profiles').select('role').eq('id', user.id).single();
-    // setIsAdmin(data?.role === 'admin');
-
   }, []);
 
   useEffect(() => {
@@ -52,13 +49,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const currentUser = session?.user ?? null;
       setUser(currentUser);
       await checkAdminRole(currentUser);
+      
+      if (_event === 'SIGNED_IN' && currentUser?.email === 'kartikroyal777@gmail.com') {
+        navigate('/admin');
+      }
+
       setLoading(false);
     });
 
     return () => {
       authListener.subscription.unsubscribe();
     };
-  }, [checkAdminRole]);
+  }, [checkAdminRole, navigate]);
 
   const signOut = async () => {
     await supabase.auth.signOut();
@@ -71,7 +73,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     session,
     loading,
     isAdmin,
-    signOut
+    signOut,
+    signInWithPassword: supabase.auth.signInWithPassword,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

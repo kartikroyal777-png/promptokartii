@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import Button from '../components/ui/Button';
 import { ArrowRight, Loader, Upload, Zap, Link as LinkIcon, DollarSign, PenTool } from 'lucide-react';

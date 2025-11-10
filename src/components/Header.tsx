@@ -27,7 +27,7 @@ const Header: React.FC = () => {
           <Link to="/" className="flex items-center gap-2">
             <Sparkles className="w-6 h-6 text-accent" />
             <span className="text-xl font-bold text-dark font-display" style={{ fontWeight: 600 }}>
-              Dollar<span className="text-accent">Prompt</span>
+              OG<span className="text-accent">Prompts</span>
             </span>
           </Link>
           

@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { supabase } from '../lib/supabase';
 import { Category } from '../types';
 import Button from '../components/ui/Button';
-import { Plus, Loader, UploadCloud } from 'lucide-react';
+import { Plus, Loader, UploadCloud, Image as ImageIcon } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 import { v4 as uuidv4 } from 'uuid';
@@ -16,6 +16,7 @@ const UploadPromptPage: React.FC = () => {
   const [instagramHandle, setInstagramHandle] = useState('');
   const [categoryId, setCategoryId] = useState<number | undefined>(undefined);
   const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [promptText, setPromptText] = useState('');
   const [instructions, setInstructions] = useState('');
   const [adDirectLinkUrl, setAdDirectLinkUrl] = useState('');
@@ -30,6 +31,18 @@ const UploadPromptPage: React.FC = () => {
     fetchCategories();
   }, []);
 
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setImageFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const resetForm = () => {
     setTitle('');
     setCreatorName('');
@@ -39,6 +52,7 @@ const UploadPromptPage: React.FC = () => {
     setInstructions('');
     setAdDirectLinkUrl('');
     setImageFile(null);
+    setImagePreview(null);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -55,8 +69,6 @@ const UploadPromptPage: React.FC = () => {
     setFormLoading(true);
     const toastId = toast.loading('Uploading prompt...');
     
-    let imageUrl = '';
-
     const fileName = `${uuidv4()}-${imageFile.name}`;
     const { data: uploadData, error: uploadError } = await supabase.storage.from('prompt-images').upload(fileName, imageFile);
     
@@ -65,7 +77,7 @@ const UploadPromptPage: React.FC = () => {
       setFormLoading(false);
       return;
     }
-    imageUrl = supabase.storage.from('prompt-images').getPublicUrl(uploadData.path).data.publicUrl;
+    const imageUrl = supabase.storage.from('prompt-images').getPublicUrl(uploadData.path).data.publicUrl;
     
     const promptData = { 
       title, 
@@ -120,8 +132,20 @@ const UploadPromptPage: React.FC = () => {
           </div>
           <input type="url" placeholder="Your Ad/Monetization Direct Link (optional)" value={adDirectLinkUrl} onChange={e => setAdDirectLinkUrl(e.target.value)} className="w-full p-3 border border-light rounded-lg"/>
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Preview Image*</label>
-            <input type="file" accept="image/*" onChange={e => e.target.files && setImageFile(e.target.files[0])} required className="w-full p-3 border border-light rounded-lg file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-accent/20 file:text-accent hover:file:bg-accent/30"/>
+            <label className="block text-sm font-medium text-slate-700 mb-2">Preview Image*</label>
+            <div className="flex items-center gap-6">
+              <div className="w-32 h-32 aspect-square rounded-lg border-2 border-dashed border-slate-300 flex items-center justify-center bg-slate-50 overflow-hidden">
+                {imagePreview ? (
+                  <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
+                ) : (
+                  <div className="text-center text-slate-400">
+                    <ImageIcon className="mx-auto w-8 h-8" />
+                    <span className="text-xs">Preview</span>
+                  </div>
+                )}
+              </div>
+              <input type="file" accept="image/*" onChange={handleImageChange} required className="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-accent/20 file:text-accent hover:file:bg-accent/30 cursor-pointer"/>
+            </div>
           </div>
           <textarea placeholder="Prompt Text*" value={promptText} onChange={e => setPromptText(e.target.value)} required rows={4} className="w-full p-3 border border-light rounded-lg"/>
           <textarea placeholder="Instructions for use (optional)" value={instructions} onChange={e => setInstructions(e.target.value)} rows={2} className="w-full p-3 border border-light rounded-lg"/>

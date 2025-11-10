@@ -73,7 +73,7 @@ const InstructionsPage: React.FC = () => {
         className="bg-white rounded-xl shadow-soft p-6 sm:p-8 lg:p-10"
       >
         <div className="text-center mb-12">
-            <h1 className="text-4xl md:text-5xl font-extrabold text-dark font-display mb-4">How to Create with Seedream</h1>
+            <h1 className="text-4xl md:text-5xl font-extrabold text-dark font-display mb-4">How to Use Our Prompts</h1>
             <p className="text-lg text-slate-600">Follow these simple steps to generate your own images for free.</p>
         </div>
 

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../lib/supabase';
 import { Prompt } from '../types';
@@ -27,11 +27,6 @@ const addLikedPrompt = (promptId: string) => {
     if (!liked.includes(promptId)) {
         setLikedPrompts([...liked, promptId]);
     }
-};
-
-const removeLikedPrompt = (promptId: string) => {
-    const liked = getLikedPrompts();
-    setLikedPrompts(liked.filter(id => id !== promptId));
 };
 
 const PromptDetailPage: React.FC = () => {
@@ -85,6 +80,7 @@ const PromptDetailPage: React.FC = () => {
     if (prompt) {
       navigator.clipboard.writeText(prompt.prompt_text);
       setIsCopied(true);
+      toast.success('Prompt copied to clipboard!');
       if (copyTimeoutRef.current) clearTimeout(copyTimeoutRef.current);
       copyTimeoutRef.current = setTimeout(() => setIsCopied(false), 2000);
     }
@@ -107,12 +103,7 @@ const PromptDetailPage: React.FC = () => {
     const { error } = await supabase.rpc('increment_like_count', { p_prompt_id: prompt.id });
     if (error) {
       console.error("Error incrementing like:", error);
-      toast.error("Couldn't save your like. Please try again.");
-
-      // Rollback on error
-      setIsLiked(false);
-      setOptimisticLikeCount(prev => prev - 1);
-      removeLikedPrompt(prompt.id);
+      // We don't show an error toast or rollback to allow for a seamless "anonymous like" experience
     }
   };
 
@@ -164,7 +155,14 @@ const PromptDetailPage: React.FC = () => {
                   </div>
                   <h1 className="text-3xl md:text-4xl font-extrabold text-dark font-display mb-2">{prompt.title}</h1>
                   <div className="text-slate-500 mb-6 flex items-center gap-2">
-                    <span>by {creatorName}</span>
+                    <span>by 
+                      <Link 
+                        to={`/creator/${encodeURIComponent(creatorName)}`} 
+                        className="font-semibold hover:underline ml-1 text-slate-600"
+                      >
+                        {creatorName}
+                      </Link>
+                    </span>
                     {instagramUrl && (
                         <a href={instagramUrl} target="_blank" rel="noopener noreferrer" className="hover:text-pink-400 transition-colors">
                             <FaInstagram />

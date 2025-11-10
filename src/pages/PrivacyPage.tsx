@@ -29,7 +29,7 @@ const PrivacyPage: React.FC = () => {
           <p>Your pay-link (e.g., Adsterra) is embedded in your prompt's "Get Prompt" button. Their privacy policy applies after a visitor clicks that link. We do not sell, rent, or trade any of your data with anyone.</p>
           
           <h3>4. Your rights</h3>
-          <p>To request deletion of a prompt you uploaded, please contact us at <a href="mailto:support@dollarprompt.com">support@dollarprompt.com</a>. We are GDPR & CCPA compliant.</p>
+          <p>To request deletion of a prompt you uploaded, please contact us at <a href="mailto:support@ogprompts.com">support@ogprompts.com</a>. We are GDPR & CCPA compliant.</p>
           
           <h3>5. Security</h3>
           <p>We use HTTPS everywhere and have security measures in place to protect the integrity of the site.</p>

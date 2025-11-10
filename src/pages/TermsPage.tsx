@@ -17,7 +17,7 @@ const TermsPage: React.FC = () => {
         
         <div className="prose prose-lg max-w-none text-slate-700 leading-relaxed">
             <h3>1. Accepting these terms</h3>
-            <p>By viewing or uploading anything on DollarPrompt, you agree to these terms.</p>
+            <p>By viewing or uploading anything on OG Prompts, you agree to these terms.</p>
 
             <h3>2. Allowed content</h3>
             <p>Only text prompts and legitimate pay-links (no malware, no phishing, no adult content where prohibited). You keep full ownership of prompts you upload; we just host them.</p>

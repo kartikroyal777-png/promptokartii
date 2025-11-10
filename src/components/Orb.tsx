@@ -6,13 +6,15 @@ interface OrbProps {
   hoverIntensity?: number;
   rotateOnHover?: boolean;
   forceHoverState?: boolean;
+  className?: string;
 }
 
 export default function Orb({
   hue = 0,
   hoverIntensity = 0.2,
   rotateOnHover = true,
-  forceHoverState = false
+  forceHoverState = false,
+  className = ''
 }: OrbProps) {
   const ctnDom = useRef<HTMLDivElement>(null);
 
@@ -286,5 +288,5 @@ export default function Orb({
     };
   }, [hue, hoverIntensity, rotateOnHover, forceHoverState]);
 
-  return <div ref={ctnDom} className="w-full h-full" />;
+  return <div ref={ctnDom} className={`w-full h-full ${className}`} />;
 }

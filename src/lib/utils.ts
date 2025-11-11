@@ -1,22 +1,14 @@
-export const getTransformedImageUrl = (url: string, width: number, height: number): string => {
+export const getTransformedImageUrl = (url: string): string => {
   if (!url || !url.includes('supabase.co')) {
     return url;
   }
-  try {
-    const urlObj = new URL(url);
-    // Path for render endpoint: /storage/v1/render/image/public/{bucket}/{path}
-    // Path from getPublicUrl: /storage/v1/object/public/{bucket}/{path}
-    if (urlObj.pathname.includes('/object/public/')) {
-        const newPathname = urlObj.pathname.replace('/object/public/', '/render/image/public/');
-        urlObj.pathname = newPathname;
-        urlObj.searchParams.set('width', width.toString());
-        urlObj.searchParams.set('height', height.toString());
-        urlObj.searchParams.set('resize', 'cover');
-        return urlObj.toString();
-    }
-    return url;
-  } catch (error) {
-    console.error("Failed to transform image URL:", error);
-    return url;
-  }
+
+  // --- FIX: Force direct URL ---
+  // The image transformation API (resizing) can sometimes be blocked by ad blockers or
+  // have complex permission issues. To ensure images are always visible, we will now
+  // use the direct, untransformed public URL from Supabase storage.
+  // This is a more robust approach to guarantee visibility.
+
+  // The original URL from `getPublicUrl` is already the direct link we need.
+  return url;
 };

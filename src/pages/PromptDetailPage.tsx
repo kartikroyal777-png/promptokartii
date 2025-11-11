@@ -115,7 +115,7 @@ const PromptDetailPage: React.FC = () => {
 
   const creatorName = prompt.creator_name || 'Admin';
   const instagramUrl = prompt.instagram_handle ? `https://www.instagram.com/${prompt.instagram_handle.replace('@', '')}` : null;
-  const transformedImageUrl = getTransformedImageUrl(prompt.image_url, 800, 800);
+  const transformedImageUrl = getTransformedImageUrl(prompt.image_url);
 
   return (
     <>

@@ -78,7 +78,7 @@ const PromptCard: React.FC<PromptCardProps> = ({ prompt }) => {
 
   const creatorName = prompt.creator_name || 'Admin';
   const instagramUrl = prompt.instagram_handle ? `https://www.instagram.com/${prompt.instagram_handle.replace('@', '')}` : null;
-  const transformedImageUrl = getTransformedImageUrl(prompt.image_url, 400, 400);
+  const transformedImageUrl = getTransformedImageUrl(prompt.image_url);
 
   return (
     <motion.div

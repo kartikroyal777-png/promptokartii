@@ -4,25 +4,22 @@ import { BrowserRouter as Router } from 'react-router-dom';
 import App from './App.tsx';
 import { Toaster } from 'react-hot-toast';
 import './index.css';
-import { AuthProvider } from './contexts/AuthContext.tsx';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <Router>
-      <AuthProvider>
-        <App />
-        <Toaster
-          position="top-center"
-          reverseOrder={false}
-          toastOptions={{
-            duration: 3000,
-            style: {
-              background: '#ffffff',
-              color: '#0f172a',
-            },
-          }}
-        />
-      </AuthProvider>
+      <App />
+      <Toaster
+        position="top-center"
+        reverseOrder={false}
+        toastOptions={{
+          duration: 3000,
+          style: {
+            background: '#ffffff',
+            color: '#0f172a',
+          },
+        }}
+      />
     </Router>
   </StrictMode>,
 );

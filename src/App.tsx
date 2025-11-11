@@ -7,13 +7,9 @@ import InstructionsPage from './pages/InstructionsPage';
 import PromptsPage from './pages/PromptsPage';
 import PromptDetailPage from './pages/PromptDetailPage';
 import UploadPromptPage from './pages/UploadPromptPage';
-import AdminPage from './pages/AdminPage';
-import AuthPage from './pages/AuthPage';
-import { AdminLoginPage } from './pages/AdminLoginPage';
 import MainLayout from './layouts/MainLayout';
 import MonetizationGuideModal from './components/MonetizationGuideModal';
 import CreatorPage from './pages/CreatorPage';
-import ProtectedRoute from './components/ProtectedRoute';
 
 function App() {
   return (
@@ -27,13 +23,6 @@ function App() {
       <Route path="/prompts/:id" element={<MainLayout><PromptDetailPage /></MainLayout>} />
       <Route path="/upload" element={<MainLayout><UploadPromptPage /></MainLayout>} />
       <Route path="/creator/:creatorName" element={<MainLayout><CreatorPage /></MainLayout>} />
-      
-      <Route element={<ProtectedRoute />}>
-        <Route path="/admin" element={<AdminPage />} />
-      </Route>
-      
-      <Route path="/admin-login" element={<AdminLoginPage />} />
-      <Route path="/auth" element={<AuthPage />} />
       <Route path="/monetization-guide" element={<MainLayout><MonetizationGuideModal isOpen={true} onClose={() => window.history.back()} /></MainLayout>} />
     </Routes>
   );

@@ -10,11 +10,12 @@ import { v4 as uuidv4 } from 'uuid';
 
 const UploadPromptPage: React.FC = () => {
   const [categories, setCategories] = useState<Category[]>([]);
+  const [loadingCategories, setLoadingCategories] = useState(true);
   const [formLoading, setFormLoading] = useState(false);
   const [title, setTitle] = useState('');
   const [creatorName, setCreatorName] = useState('');
   const [instagramHandle, setInstagramHandle] = useState('');
-  const [categoryId, setCategoryId] = useState<number | undefined>(undefined);
+  const [categoryId, setCategoryId] = useState<string>('');
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [promptText, setPromptText] = useState('');
@@ -22,13 +23,31 @@ const UploadPromptPage: React.FC = () => {
   const [adDirectLinkUrl, setAdDirectLinkUrl] = useState('');
   const navigate = useNavigate();
 
+  const isFormValid = title && creatorName && imageFile && promptText && categoryId;
+
   useEffect(() => {
-    const fetchCategories = async () => {
-      const { data, error } = await supabase.from('categories').select('*');
-      if (error) toast.error("Could not fetch categories");
-      else setCategories(data);
+    const fetchAndSetCategories = async () => {
+      setLoadingCategories(true);
+      setCategoryId('');
+      try {
+        const { data, error } = await supabase.from('categories').select('*').order('name');
+        if (error) throw error;
+        
+        if (data && data.length > 0) {
+          setCategories(data);
+          setCategoryId(data[0].id.toString()); 
+        } else {
+          setCategories([]);
+          toast.error("No categories found. Please add some in the admin panel first.");
+        }
+      } catch (error: any) {
+        toast.error(error.message || "Could not fetch categories.");
+        setCategories([]);
+      } finally {
+        setLoadingCategories(false);
+      }
     };
-    fetchCategories();
+    fetchAndSetCategories();
   }, []);
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -47,7 +66,7 @@ const UploadPromptPage: React.FC = () => {
     setTitle('');
     setCreatorName('');
     setInstagramHandle('');
-    setCategoryId(categories.length > 0 ? categories[0].id : undefined);
+    setCategoryId(categories.length > 0 ? categories[0].id.toString() : '');
     setPromptText('');
     setInstructions('');
     setAdDirectLinkUrl('');
@@ -57,17 +76,28 @@ const UploadPromptPage: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!imageFile) {
-      toast.error('Please select an image file.');
-      return;
-    }
-    if (categoryId === undefined) {
-      toast.error('Please select a category.');
-      return;
-    }
 
+    if (!isFormValid) {
+      toast.error('Please fill out all required fields and select a category.');
+      return;
+    }
+    
     setFormLoading(true);
     const toastId = toast.loading('Uploading prompt...');
+
+    const finalCategoryId = Number(categoryId);
+    if (isNaN(finalCategoryId) || finalCategoryId <= 0) {
+        toast.error('Invalid category selected. Please refresh and try again.', { id: toastId });
+        setFormLoading(false);
+        return;
+    }
+    
+    // imageFile is checked by isFormValid, but TS doesn't know that, so we check again.
+    if (!imageFile) {
+        toast.error('An image is required.', { id: toastId });
+        setFormLoading(false);
+        return;
+    }
     
     const fileName = `${uuidv4()}-${imageFile.name}`;
     const { data: uploadData, error: uploadError } = await supabase.storage.from('prompt-images').upload(fileName, imageFile);
@@ -81,7 +111,7 @@ const UploadPromptPage: React.FC = () => {
     
     const promptData = { 
       title, 
-      category_id: categoryId, 
+      category_id: finalCategoryId, 
       image_url: imageUrl, 
       prompt_text: promptText, 
       instructions, 
@@ -114,14 +144,14 @@ const UploadPromptPage: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <input type="text" placeholder="Prompt Title*" value={title} onChange={e => setTitle(e.target.value)} required className="w-full p-3 border border-light rounded-lg"/>
             <select 
-              value={categoryId === undefined ? '' : categoryId} 
-              onChange={e => setCategoryId(e.target.value ? Number(e.target.value) : undefined)}
+              value={categoryId} 
+              onChange={e => setCategoryId(e.target.value)}
               required 
-              disabled={categories.length === 0}
-              className="w-full p-3 border border-light rounded-lg bg-white disabled:bg-slate-100"
+              disabled={loadingCategories || categories.length === 0}
+              className="w-full p-3 border border-light rounded-lg bg-white disabled:bg-slate-100 disabled:cursor-not-allowed"
             >
               <option value="" disabled>
-                {categories.length === 0 ? 'Loading categories...' : 'Select a category*'}
+                {loadingCategories ? 'Loading...' : (categories.length === 0 ? 'No categories available' : 'Select a category*')}
               </option>
               {categories.map(cat => <option key={cat.id} value={cat.id}>{cat.name}</option>)}
             </select>
@@ -150,7 +180,7 @@ const UploadPromptPage: React.FC = () => {
           <textarea placeholder="Prompt Text*" value={promptText} onChange={e => setPromptText(e.target.value)} required rows={4} className="w-full p-3 border border-light rounded-lg"/>
           <textarea placeholder="Instructions for use (optional)" value={instructions} onChange={e => setInstructions(e.target.value)} rows={2} className="w-full p-3 border border-light rounded-lg"/>
           <div className="flex justify-end gap-4">
-            <Button type="submit" disabled={formLoading} icon={formLoading ? <Loader className="animate-spin"/> : <Plus />}>
+            <Button type="submit" disabled={!isFormValid || formLoading || loadingCategories} icon={formLoading ? <Loader className="animate-spin"/> : <Plus />}>
               {formLoading ? 'Uploading...' : 'Upload Prompt'}
             </Button>
           </div>

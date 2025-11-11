@@ -15,7 +15,8 @@ const UploadPromptPage: React.FC = () => {
   const [title, setTitle] = useState('');
   const [creatorName, setCreatorName] = useState('');
   const [instagramHandle, setInstagramHandle] = useState('');
-  const [categoryId, setCategoryId] = useState<string>('');
+  // Correctly handle numeric ID or an empty string for the placeholder
+  const [categoryId, setCategoryId] = useState<number | ''>('');
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [promptText, setPromptText] = useState('');
@@ -23,31 +24,30 @@ const UploadPromptPage: React.FC = () => {
   const [adDirectLinkUrl, setAdDirectLinkUrl] = useState('');
   const navigate = useNavigate();
 
-  const isFormValid = title && creatorName && imageFile && promptText && categoryId;
+  // Updated validation to correctly check for a selected category
+  const isFormValid = title && creatorName && imageFile && promptText && categoryId !== '';
 
   useEffect(() => {
-    const fetchAndSetCategories = async () => {
+    const fetchCategories = async () => {
       setLoadingCategories(true);
-      setCategoryId('');
       try {
         const { data, error } = await supabase.from('categories').select('*').order('name');
         if (error) throw error;
         
         if (data && data.length > 0) {
           setCategories(data);
-          setCategoryId(data[0].id.toString()); 
         } else {
           setCategories([]);
           toast.error("No categories found. Please add some in the admin panel first.");
         }
       } catch (error: any) {
-        toast.error(error.message || "Could not fetch categories.");
+        toast.error(error.message || "Could not fetch categories. Please ensure you have an internet connection.");
         setCategories([]);
       } finally {
         setLoadingCategories(false);
       }
     };
-    fetchAndSetCategories();
+    fetchCategories();
   }, []);
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -66,7 +66,7 @@ const UploadPromptPage: React.FC = () => {
     setTitle('');
     setCreatorName('');
     setInstagramHandle('');
-    setCategoryId(categories.length > 0 ? categories[0].id.toString() : '');
+    setCategoryId('');
     setPromptText('');
     setInstructions('');
     setAdDirectLinkUrl('');
@@ -78,21 +78,13 @@ const UploadPromptPage: React.FC = () => {
     e.preventDefault();
 
     if (!isFormValid) {
-      toast.error('Please fill out all required fields and select a category.');
+      toast.error('Please fill out all required fields, including selecting a category.');
       return;
     }
     
     setFormLoading(true);
     const toastId = toast.loading('Uploading prompt...');
-
-    const finalCategoryId = Number(categoryId);
-    if (isNaN(finalCategoryId) || finalCategoryId <= 0) {
-        toast.error('Invalid category selected. Please refresh and try again.', { id: toastId });
-        setFormLoading(false);
-        return;
-    }
     
-    // imageFile is checked by isFormValid, but TS doesn't know that, so we check again.
     if (!imageFile) {
         toast.error('An image is required.', { id: toastId });
         setFormLoading(false);
@@ -111,7 +103,7 @@ const UploadPromptPage: React.FC = () => {
     
     const promptData = { 
       title, 
-      category_id: finalCategoryId, 
+      category_id: categoryId, // Already a number, no conversion needed
       image_url: imageUrl, 
       prompt_text: promptText, 
       instructions, 
@@ -145,13 +137,14 @@ const UploadPromptPage: React.FC = () => {
             <input type="text" placeholder="Prompt Title*" value={title} onChange={e => setTitle(e.target.value)} required className="w-full p-3 border border-light rounded-lg"/>
             <select 
               value={categoryId} 
-              onChange={e => setCategoryId(e.target.value)}
+              // Handle change correctly, converting to number
+              onChange={e => setCategoryId(e.target.value ? Number(e.target.value) : '')}
               required 
               disabled={loadingCategories || categories.length === 0}
               className="w-full p-3 border border-light rounded-lg bg-white disabled:bg-slate-100 disabled:cursor-not-allowed"
             >
               <option value="" disabled>
-                {loadingCategories ? 'Loading...' : (categories.length === 0 ? 'No categories available' : 'Select a category*')}
+                {loadingCategories ? 'Loading categories...' : (categories.length === 0 ? 'No categories available' : 'Select a category*')}
               </option>
               {categories.map(cat => <option key={cat.id} value={cat.id}>{cat.name}</option>)}
             </select>

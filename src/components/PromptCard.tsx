@@ -47,7 +47,8 @@ const PromptCard: React.FC<PromptCardProps> = ({ prompt }) => {
         sessionStorage.setItem(`adShown_${prompt.id}`, 'true');
       }
     }
-    navigate(`/prompts/${prompt.id}`);
+    // Navigate using the user-friendly numeric prompt_id
+    navigate(`/prompts/${prompt.prompt_id}`);
   };
 
   const handleLikeClick = async (e: React.MouseEvent) => {

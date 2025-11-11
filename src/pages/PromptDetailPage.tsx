@@ -30,7 +30,7 @@ const addLikedPrompt = (promptId: string) => {
 };
 
 const PromptDetailPage: React.FC = () => {
-  const { id } = useParams<{ id: string }>();
+  const { id } = useParams<{ id: string }>(); // This `id` is the numeric prompt_id
   const navigate = useNavigate();
 
   const [prompt, setPrompt] = useState<Prompt | null>(null);
@@ -43,19 +43,13 @@ const PromptDetailPage: React.FC = () => {
   const [optimisticLikeCount, setOptimisticLikeCount] = useState(0);
 
   useEffect(() => {
-    if (id) {
-        setIsLiked(getLikedPrompts().includes(id));
-    }
-  }, [id]);
-
-  useEffect(() => {
     const fetchPrompt = async () => {
       if (!id) return;
       setLoading(true);
       const { data, error } = await supabase
         .from('prompts')
         .select('*, categories(name)')
-        .eq('id', id)
+        .eq('prompt_id', id) // Query using the numeric prompt_id
         .single();
       
       if (error) {
@@ -63,6 +57,10 @@ const PromptDetailPage: React.FC = () => {
       } else {
         setPrompt(data as any);
         setOptimisticLikeCount(data.like_count);
+        // Check if liked using the correct UUID from the fetched data
+        if (data) {
+          setIsLiked(getLikedPrompts().includes(data.id));
+        }
       }
       setLoading(false);
     };

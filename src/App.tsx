@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import HomePage from './pages/HomePage';
 import AboutPage from './pages/AboutPage';
@@ -12,6 +13,18 @@ import MonetizationGuideModal from './components/MonetizationGuideModal';
 import CreatorPage from './pages/CreatorPage';
 
 function App() {
+  useEffect(() => {
+    const interstitialAdKey = 'interstitialAdShown_session';
+    if (!sessionStorage.getItem(interstitialAdKey)) {
+      sessionStorage.setItem(interstitialAdKey, 'true');
+      
+      // This logic replicates the provided interstitial ad script dynamically and safely.
+      const s = document.body.appendChild(document.createElement('script'));
+      s.dataset.zone = '10186090';
+      s.src = 'https://groleegni.net/vignette.min.js';
+    }
+  }, []);
+
   return (
     <Routes>
       <Route path="/" element={<MainLayout><HomePage /></MainLayout>} />

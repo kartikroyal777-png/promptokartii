@@ -17,13 +17,12 @@ const UploadPromptPage: React.FC = () => {
   const [instagramHandle, setInstagramHandle] = useState('');
   const [promptText, setPromptText] = useState('');
   const [instructions, setInstructions] = useState('');
-  const [adDirectLinkUrl, setAdDirectLinkUrl] = useState('');
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
 
-  // Category state - Re-engineered for reliability
+  // Category state
   const [categories, setCategories] = useState<Category[]>([]);
-  const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(null); // Use number type
+  const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(null);
   const [loadingCategories, setLoadingCategories] = useState(true);
 
   // Submission state
@@ -38,7 +37,6 @@ const UploadPromptPage: React.FC = () => {
         
         if (data && data.length > 0) {
           setCategories(data);
-          // **DEFINITIVE FIX**: Automatically select the first category's numeric ID.
           setSelectedCategoryId(data[0].id);
         } else {
           setCategories([]);
@@ -70,7 +68,6 @@ const UploadPromptPage: React.FC = () => {
     e.preventDefault();
     setFormLoading(true);
 
-    // --- RE-ENGINEERED VALIDATION ---
     if (!selectedCategoryId || selectedCategoryId <= 0) {
         toast.error("A category must be selected. Please wait for categories to load or refresh the page.");
         setFormLoading(false);
@@ -102,13 +99,12 @@ const UploadPromptPage: React.FC = () => {
       
       const promptData = { 
         title: title.trim(), 
-        category_id: selectedCategoryId, // Already a number
+        category_id: selectedCategoryId,
         image_url: imageUrl, 
         prompt_text: promptText.trim(), 
         instructions: instructions.trim() || null,
         creator_name: creatorName.trim(),
         instagram_handle: instagramHandle.trim() || null,
-        ad_direct_link_url: adDirectLinkUrl.trim() || null
       };
 
       const { error: insertError } = await supabase.from('prompts').insert([promptData]);
@@ -135,7 +131,7 @@ const UploadPromptPage: React.FC = () => {
         <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="mb-12 text-center">
             <UploadCloud className="w-16 h-16 mx-auto text-accent mb-4" />
             <h1 className="text-3xl md:text-5xl font-extrabold text-dark font-display">Upload Your Prompt</h1>
-            <p className="text-md md:text-lg text-slate-600 mt-2">Share your creation with the world and monetize it.</p>
+            <p className="text-md md:text-lg text-slate-600 mt-2">Share your creation with the world.</p>
         </motion.div>
 
         <form onSubmit={handleSubmit} className="space-y-8">
@@ -145,10 +141,8 @@ const UploadPromptPage: React.FC = () => {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <input type="text" placeholder="Instagram Handle (e.g., @username)" value={instagramHandle} onChange={e => setInstagramHandle(e.target.value)} className="w-full p-3 border border-light rounded-lg"/>
-            <input type="url" placeholder="Your Ad/Monetization Direct Link (optional)" value={adDirectLinkUrl} onChange={e => setAdDirectLinkUrl(e.target.value)} className="w-full p-3 border border-light rounded-lg"/>
           </div>
 
-          {/* --- RE-ENGINEERED CATEGORY SELECTION --- */}
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-2">Category*</label>
             <div className="p-3 border border-light rounded-lg bg-slate-50">
@@ -160,9 +154,9 @@ const UploadPromptPage: React.FC = () => {
                     <button
                       key={cat.id}
                       type="button"
-                      onClick={() => setSelectedCategoryId(cat.id)} // Set number directly
+                      onClick={() => setSelectedCategoryId(cat.id)}
                       className={`px-4 py-2 text-sm font-semibold rounded-lg transition-all duration-200 border-2 flex items-center gap-2 ${
-                        selectedCategoryId === cat.id // Compare numbers
+                        selectedCategoryId === cat.id
                           ? 'bg-accent text-white border-accent shadow-md'
                           : 'bg-white text-slate-700 border-slate-200 hover:border-accent/50'
                       }`}

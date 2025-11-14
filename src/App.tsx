@@ -9,7 +9,6 @@ import PromptsPage from './pages/PromptsPage';
 import PromptDetailPage from './pages/PromptDetailPage';
 import UploadPromptPage from './pages/UploadPromptPage';
 import MainLayout from './layouts/MainLayout';
-import MonetizationGuideModal from './components/MonetizationGuideModal';
 import CreatorPage from './pages/CreatorPage';
 
 function App() {
@@ -36,7 +35,6 @@ function App() {
       <Route path="/prompts/:id" element={<MainLayout><PromptDetailPage /></MainLayout>} />
       <Route path="/upload" element={<MainLayout><UploadPromptPage /></MainLayout>} />
       <Route path="/creator/:creatorName" element={<MainLayout><CreatorPage /></MainLayout>} />
-      <Route path="/monetization-guide" element={<MainLayout><MonetizationGuideModal isOpen={true} onClose={() => window.history.back()} /></MainLayout>} />
     </Routes>
   );
 }

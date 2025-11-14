@@ -12,13 +12,14 @@ const AboutPage: React.FC = () => {
       >
         <h1 className="text-3xl md:text-4xl font-extrabold text-dark font-display mb-6 text-center">About OG Prompts</h1>
         <div className="prose prose-lg max-w-none text-slate-700 leading-relaxed">
-          <p>Hi! I’m Kartik Kumawat, solo developer and AI-image nut.</p>
-          <p>I built OG Prompts to give everyone two dead-simple things:</p>
+          <p>Hi! I’m Kartik Kumawat, a solo developer and AI-image enthusiast.</p>
+          <p>I built OG Prompts with a simple goal: to create a high-quality, curated library of AI art prompts that anyone can use for free.</p>
           <ul>
-            <li>Copy the hottest Midjourney / Stable-Diffusion prompts in one click—totally free, no sign-up.</li>
-            <li>Upload your own prompts and attach an Adsterra Direct-Link (or any pay-link). When visitors click, you earn $0.50-$5 per 1,000 clicks—we take a <strong className="text-accent">0% cut</strong>.</li>
+            <li>Copy the hottest Midjourney / Stable-Diffusion prompts in one click—totally free, no sign-up required.</li>
+            <li>Explore a growing collection of prompts, hand-picked for creativity and quality.</li>
           </ul>
-          <p>That’s it. No subscriptions, no hidden fees, no data-selling.</p>
+          <p>That’s it. No subscriptions, no hidden fees, no data-selling. Just a clean, simple resource for creators.</p>
+          <p>The upload feature is currently managed by our team to ensure the quality of the prompts available on the site.</p>
           <p>Questions? Drop a line at <a href="mailto:support@ogprompts.com">support@ogprompts.com</a></p>
           <p className="text-center font-semibold mt-8">Happy prompting!<br/>– Kartik</p>
         </div>

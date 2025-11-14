@@ -40,14 +40,6 @@ const PromptCard: React.FC<PromptCardProps> = ({ prompt }) => {
   }, [prompt.id, prompt.like_count]);
 
   const handleView = () => {
-    if (prompt.ad_direct_link_url) {
-      const adShownThisSession = sessionStorage.getItem(`adShown_${prompt.id}`);
-      if (!adShownThisSession) {
-        window.open(prompt.ad_direct_link_url, '_blank', 'noopener,noreferrer');
-        sessionStorage.setItem(`adShown_${prompt.id}`, 'true');
-      }
-    }
-    // Navigate using the user-friendly numeric prompt_id
     navigate(`/prompts/${prompt.prompt_id}`);
   };
 

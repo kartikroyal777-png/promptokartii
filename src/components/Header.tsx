@@ -1,19 +1,23 @@
 import React, { useState } from 'react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
-import { Sparkles, Upload, DollarSign } from 'lucide-react';
+import { Sparkles, Upload } from 'lucide-react';
 import { motion } from 'framer-motion';
 import Button from './ui/Button';
-import MonetizationGuideModal from './MonetizationGuideModal';
+import AdminAuthModal from './AdminAuthModal';
 
 const Header: React.FC = () => {
   const navigate = useNavigate();
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isAdminAuthModalOpen, setIsAdminAuthModalOpen] = useState(false);
 
   const navLinkClasses = "text-slate-600 hover:text-dark font-medium transition-colors";
   const activeNavLinkClasses = "text-dark";
 
   const getNavLinkClass = ({ isActive }: { isActive: boolean }) => 
     `${navLinkClasses} ${isActive ? activeNavLinkClasses : ''}`;
+
+  const handleUploadSuccess = () => {
+    navigate('/upload');
+  };
 
   return (
     <>
@@ -37,18 +41,18 @@ const Header: React.FC = () => {
           </nav>
 
           <div className="flex items-center gap-2 sm:gap-4">
-            <Button onClick={() => setIsModalOpen(true)} variant="outline" className="px-3 py-2 md:px-3 md:py-2" aria-label="Monetization Guide">
-              <DollarSign size={18} className="text-amber-500"/>
-              <span className="hidden sm:inline ml-2">Monetize</span>
-            </Button>
-            <Button onClick={() => navigate('/upload')} variant="primary" className="px-3 py-2 md:px-3 md:py-2" aria-label="Upload Prompt">
+            <Button onClick={() => setIsAdminAuthModalOpen(true)} variant="primary" className="px-3 py-2 md:px-3 md:py-2" aria-label="Upload Prompt">
               <Upload size={18} />
               <span className="hidden sm:inline ml-2">Upload</span>
             </Button>
           </div>
         </div>
       </motion.header>
-      <MonetizationGuideModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
+      <AdminAuthModal 
+        isOpen={isAdminAuthModalOpen} 
+        onClose={() => setIsAdminAuthModalOpen(false)}
+        onSuccess={handleUploadSuccess}
+      />
     </>
   );
 };

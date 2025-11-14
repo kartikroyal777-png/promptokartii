@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import Button from '../components/ui/Button';
-import { ArrowRight, Loader, Upload, Zap, Link as LinkIcon, DollarSign, PenTool } from 'lucide-react';
+import { ArrowRight, Loader, Upload, Zap } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { Prompt } from '../types';
 import PromptCard from '../components/PromptCard';
@@ -55,7 +55,7 @@ const HomePage: React.FC = () => {
                 Free, Open-Source AI Prompts
               </h1>
               <p className="text-lg sm:text-xl text-slate-600 mb-8 max-w-2xl mx-auto">
-                The #1 free platform to discover, share, and monetize AI art prompts. We take <strong className="text-accent">0% commission</strong>.
+                The #1 free platform to discover and share high-quality AI art prompts.
               </p>
             </motion.div>
             <motion.div
@@ -68,8 +68,8 @@ const HomePage: React.FC = () => {
                 <Button onClick={() => navigate('/prompts')} variant="primary" icon={<Zap size={18}/>} className="w-full sm:w-auto">
                   Explore Prompts
                 </Button>
-                 <Button onClick={() => navigate('/upload')} variant="outline" icon={<Upload size={18}/>} className="w-full sm:w-auto">
-                  Upload Your Prompt
+                 <Button onClick={() => navigate('/instructions')} variant="outline" icon={<Upload size={18}/>} className="w-full sm:w-auto">
+                  How to Use
                 </Button>
               </div>
               <SearchBar
@@ -135,45 +135,8 @@ const HomePage: React.FC = () => {
           </div>
         </div>
       </div>
-
-      {/* How It Works Section */}
-      <div className="py-20 bg-slate-50">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, amount: 0.5 }}
-            transition={{ duration: 0.5 }}
-            className="text-center mb-12"
-          >
-            <h2 className="text-4xl md:text-5xl font-extrabold text-dark font-display">How It Works</h2>
-            <p className="text-lg text-slate-600 mt-2">Start monetizing your creativity in three simple steps.</p>
-          </motion.div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
-            <HowItWorksStep icon={PenTool} title="Upload Your Prompt" description="Share your unique AI art prompt along with a preview image." />
-            <HowItWorksStep icon={LinkIcon} title="Attach Your Pay-Link" description="Add a direct link from a service like Adsterra to your upload." />
-            <HowItWorksStep icon={DollarSign} title="Get Paid 100%" description="When users click your link, you earn. We take zero commission, ever." />
-          </div>
-        </div>
-      </div>
     </>
   );
 };
-
-const HowItWorksStep = ({ icon: Icon, title, description }: { icon: React.ElementType, title: string, description: string }) => (
-  <motion.div
-    initial={{ opacity: 0, y: 20 }}
-    whileInView={{ opacity: 1, y: 0 }}
-    viewport={{ once: true, amount: 0.5 }}
-    transition={{ duration: 0.5 }}
-    className="text-center p-6"
-  >
-    <div className="flex items-center justify-center w-16 h-16 bg-accent/10 rounded-full mx-auto mb-4">
-      <Icon className="w-8 h-8 text-accent" />
-    </div>
-    <h3 className="text-xl font-bold text-dark mb-2">{title}</h3>
-    <p className="text-slate-600">{description}</p>
-  </motion.div>
-);
 
 export default HomePage;

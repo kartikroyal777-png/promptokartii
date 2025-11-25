@@ -2,10 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import Button from '../components/ui/Button';
-import { ArrowRight, Loader, Upload, Zap } from 'lucide-react';
+import { ArrowRight, Upload, Zap } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { Prompt } from '../types';
 import PromptCard from '../components/PromptCard';
+import { PromptCardSkeleton } from '../components/ui/Skeleton';
 import SearchBar from '../components/ui/SearchBar';
 import { FaInstagram, FaTelegram } from 'react-icons/fa';
 import Orb from '../components/Orb';
@@ -97,17 +98,18 @@ const HomePage: React.FC = () => {
             <h2 className="text-4xl md:text-5xl font-extrabold text-dark font-display">Trending Prompts</h2>
             <p className="text-lg text-slate-600 mt-2">Get a glimpse of our most popular creations.</p>
           </motion.div>
-          {loading ? (
-            <div className="flex justify-center items-center h-64">
-              <Loader className="w-8 h-8 animate-spin text-accent" />
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {prompts.map(prompt => (
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {loading ? (
+              // Show 6 skeletons while loading
+              [...Array(6)].map((_, i) => <PromptCardSkeleton key={i} />)
+            ) : (
+              prompts.map(prompt => (
                 <PromptCard key={prompt.id} prompt={prompt} />
-              ))}
-            </div>
-          )}
+              ))
+            )}
+          </div>
+
           <div className="text-center mt-12">
             <Button onClick={() => navigate('/prompts')} variant="outline" icon={<ArrowRight />}>View All Prompts</Button>
           </div>

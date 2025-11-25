@@ -4,13 +4,10 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../lib/supabase';
 import { Prompt } from '../types';
 import Button from '../components/ui/Button';
-import { ArrowLeft, Copy, Check, Info, Loader, Heart } from 'lucide-react';
+import { PromptDetailSkeleton } from '../components/ui/Skeleton';
+import { ArrowLeft, Copy, Check, Info, Heart, ExternalLink } from 'lucide-react';
 import { FaHeart, FaInstagram } from 'react-icons/fa';
 import toast from 'react-hot-toast';
-import Ad300x250 from '../components/ads/Ad300x250';
-import Ad728x90 from '../components/ads/Ad728x90';
-import Ad468x60 from '../components/ads/Ad468x60';
-import Ad320x50 from '../components/ads/Ad320x50';
 import { getTransformedImageUrl } from '../lib/utils';
 
 const getLikedPrompts = (): string[] => {
@@ -30,7 +27,7 @@ const addLikedPrompt = (promptId: string) => {
 };
 
 const PromptDetailPage: React.FC = () => {
-  const { id } = useParams<{ id: string }>(); // This `id` is the numeric prompt_id
+  const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
 
   const [prompt, setPrompt] = useState<Prompt | null>(null);
@@ -49,7 +46,7 @@ const PromptDetailPage: React.FC = () => {
       const { data, error } = await supabase
         .from('prompts')
         .select('*, categories(name)')
-        .eq('prompt_id', id) // Query using the numeric prompt_id
+        .eq('prompt_id', id)
         .single();
       
       if (error) {
@@ -57,7 +54,6 @@ const PromptDetailPage: React.FC = () => {
       } else {
         setPrompt(data as any);
         setOptimisticLikeCount(data.like_count);
-        // Check if liked using the correct UUID from the fetched data
         if (data) {
           setIsLiked(getLikedPrompts().includes(data.id));
         }
@@ -91,7 +87,6 @@ const PromptDetailPage: React.FC = () => {
         return;
     }
 
-    // Optimistic UI Update
     setIsLiked(true);
     setOptimisticLikeCount(prev => prev + 1);
     addLikedPrompt(prompt.id);
@@ -101,12 +96,21 @@ const PromptDetailPage: React.FC = () => {
     const { error } = await supabase.rpc('increment_like_count', { p_prompt_id: prompt.id });
     if (error) {
       console.error("Error incrementing like:", error);
-      // We don't show an error toast or rollback to allow for a seamless "anonymous like" experience
     }
   };
 
   if (loading) {
-    return <div className="min-h-screen flex items-center justify-center"><Loader className="animate-spin w-10 h-10 text-accent" /></div>;
+    return (
+        <div className="min-h-screen py-8">
+            <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+                <Button onClick={() => navigate('/prompts')} variant="outline" className="mb-8">
+                    <ArrowLeft className="w-4 h-4 mr-2" />
+                    Back to Prompts
+                </Button>
+                <PromptDetailSkeleton />
+            </div>
+        </div>
+    );
   }
   
   if (error || !prompt) {
@@ -115,7 +119,9 @@ const PromptDetailPage: React.FC = () => {
 
   const creatorName = prompt.creator_name || 'Admin';
   const instagramUrl = prompt.instagram_handle ? `https://www.instagram.com/${prompt.instagram_handle.replace('@', '')}` : null;
-  const transformedImageUrl = getTransformedImageUrl(prompt.image_url);
+  
+  // Request a high quality but optimized image for detail view (width 1200px)
+  const transformedImageUrl = getTransformedImageUrl(prompt.image_url, 1200, 90);
 
   return (
     <>
@@ -126,20 +132,15 @@ const PromptDetailPage: React.FC = () => {
             Back to Prompts
           </Button>
           
-          <div className="flex flex-col items-center gap-4 my-8">
-            <div className="hidden md:block"><Ad728x90 /></div>
-            <div className="md:hidden"><Ad320x50 /></div>
-          </div>
-
           <div className="bg-white p-6 sm:p-8 lg:p-10 rounded-xl shadow-soft">
               <div className="grid lg:grid-cols-5 gap-8 lg:gap-12">
               <motion.div 
-                  className="lg:col-span-3 rounded-xl overflow-hidden shadow-soft-lg aspect-w-1 aspect-h-1"
+                  className="lg:col-span-3 rounded-xl overflow-hidden shadow-soft-lg bg-slate-100"
                   initial={{ opacity: 0, scale: 0.9 }}
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ duration: 0.5 }}
               >
-                  <img src={transformedImageUrl} alt={prompt.title} className="w-full h-full object-cover" />
+                  <img src={transformedImageUrl} alt={prompt.title} className="w-full h-auto object-cover" />
               </motion.div>
               <div className="lg:col-span-2">
                   <motion.div
@@ -168,11 +169,21 @@ const PromptDetailPage: React.FC = () => {
                     )}
                   </div>
 
-                  <div className="flex items-center gap-4 mb-8">
+                  <div className="flex items-center gap-4 mb-8 flex-wrap">
                     <Button onClick={handleLikeClick} variant={isLiked ? "primary" : "outline"} className={`transition-colors ${isLiked ? 'bg-red-500 hover:bg-red-600 border-red-500 cursor-not-allowed' : ''}`} disabled={isLiked}>
                         {isLiked ? <FaHeart className="w-4 h-4 mr-2"/> : <Heart className="w-4 h-4 mr-2"/>}
                         {optimisticLikeCount}
                     </Button>
+
+                    {/* Direct Link Ad Button - Only shown if the admin/creator added a link */}
+                    {prompt.ad_direct_link_url && (
+                        <a href={prompt.ad_direct_link_url} target="_blank" rel="noopener noreferrer">
+                            <Button variant="primary" className="bg-green-600 hover:bg-green-700 border-green-600">
+                                <ExternalLink className="w-4 h-4 mr-2" />
+                                Get Prompt / Support
+                            </Button>
+                        </a>
+                    )}
                   </div>
                   
                   <motion.div
@@ -207,15 +218,6 @@ const PromptDetailPage: React.FC = () => {
                   </motion.div>
               </div>
               </div>
-          </div>
-          <div className="mt-12 border-t border-light pt-8">
-            <h3 className="font-bold text-slate-500 text-sm uppercase tracking-wider text-center mb-6">Advertisement</h3>
-            <div className="flex justify-center">
-                {/* Responsive Ad Slot */}
-                <div className="hidden lg:block"><Ad728x90 /></div>
-                <div className="hidden sm:block lg:hidden"><Ad468x60 /></div>
-                <div className="sm:hidden"><Ad300x250 /></div>
-            </div>
           </div>
         </div>
       </div>

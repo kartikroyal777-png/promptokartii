@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { supabase } from '../lib/supabase';
 import { Category } from '../types';
 import Button from '../components/ui/Button';
-import { Loader, UploadCloud, Image as ImageIcon, Check } from 'lucide-react';
+import { Loader, UploadCloud, Image as ImageIcon, Check, Link as LinkIcon } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 import { v4 as uuidv4 } from 'uuid';
@@ -17,6 +17,7 @@ const UploadPromptPage: React.FC = () => {
   const [instagramHandle, setInstagramHandle] = useState('');
   const [promptText, setPromptText] = useState('');
   const [instructions, setInstructions] = useState('');
+  const [directLinkUrl, setDirectLinkUrl] = useState(''); // Added direct link state
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
 
@@ -105,6 +106,7 @@ const UploadPromptPage: React.FC = () => {
         instructions: instructions.trim() || null,
         creator_name: creatorName.trim(),
         instagram_handle: instagramHandle.trim() || null,
+        ad_direct_link_url: directLinkUrl.trim() || null, // Save direct link
       };
 
       const { error: insertError } = await supabase.from('prompts').insert([promptData]);
@@ -141,6 +143,16 @@ const UploadPromptPage: React.FC = () => {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <input type="text" placeholder="Instagram Handle (e.g., @username)" value={instagramHandle} onChange={e => setInstagramHandle(e.target.value)} className="w-full p-3 border border-light rounded-lg"/>
+            <div className="relative">
+                <LinkIcon className="absolute left-3 top-3.5 w-5 h-5 text-slate-400" />
+                <input 
+                    type="url" 
+                    placeholder="Monetization/Direct Link URL (Optional)" 
+                    value={directLinkUrl} 
+                    onChange={e => setDirectLinkUrl(e.target.value)} 
+                    className="w-full p-3 pl-10 border border-light rounded-lg"
+                />
+            </div>
           </div>
 
           <div>

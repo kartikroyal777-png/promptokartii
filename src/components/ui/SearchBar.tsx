@@ -17,17 +17,7 @@ const SearchBar: React.FC<SearchBarProps> = ({ value, onChange, onSearch, placeh
     }
   };
 
-  const handleFocus = () => {
-    const popunderAdKey = 'popunderAdShown_session';
-    if (!sessionStorage.getItem(popunderAdKey)) {
-      sessionStorage.setItem(popunderAdKey, 'true');
-      
-      // This logic replicates the provided pop-under ad script dynamically and safely.
-      const s = document.body.appendChild(document.createElement('script'));
-      s.dataset.zone = '10186112';
-      s.src = 'https://al5sm.com/tag.min.js';
-    }
-  };
+  // Removed handleFocus ad injection
 
   return (
     <div className={`relative group ${className}`}>
@@ -39,7 +29,6 @@ const SearchBar: React.FC<SearchBarProps> = ({ value, onChange, onSearch, placeh
         value={value}
         onChange={onChange}
         onKeyDown={handleKeyDown}
-        onFocus={handleFocus}
         placeholder={placeholder}
         className="w-full pl-12 pr-4 py-3 text-base bg-white border-2 border-slate-200 rounded-full outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent transition-all duration-300 shadow-sm hover:border-slate-300"
       />

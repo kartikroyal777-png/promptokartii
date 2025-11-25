@@ -2,14 +2,11 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import PromptCard from '../components/PromptCard';
+import { PromptCardSkeleton } from '../components/ui/Skeleton';
 import { supabase } from '../lib/supabase';
 import { Prompt, Category } from '../types';
 import { Loader, AlertTriangle } from 'lucide-react';
 import SearchBar from '../components/ui/SearchBar';
-import Ad728x90 from '../components/ads/Ad728x90';
-import Ad468x60 from '../components/ads/Ad468x60';
-import Ad300x250 from '../components/ads/Ad300x250';
-import Ad320x50 from '../components/ads/Ad320x50';
 import Button from '../components/ui/Button';
 
 const PAGE_SIZE = 12;
@@ -85,7 +82,7 @@ const PromptsPage: React.FC = () => {
 
     } catch (err: any) {
       console.error('Error fetching prompts:', err);
-      setError("Could not load prompts. This might be due to a network issue or a browser extension (like an ad blocker) interfering. Please try again.");
+      setError("Could not load prompts. Please try again.");
     } finally {
       setLoading(false);
       setLoadingMore(false);
@@ -97,7 +94,6 @@ const PromptsPage: React.FC = () => {
   }, [fetchCategoriesData]);
 
   useEffect(() => {
-    // Fetch prompts only when categories are loaded, or if a search term exists
     if (categories.length > 0 || searchTerm) {
       fetchPromptsData(true);
     }
@@ -115,7 +111,6 @@ const PromptsPage: React.FC = () => {
     } else {
       navigate('/prompts', { replace: true });
     }
-    // The useEffect will trigger the fetch
   };
 
   return (
@@ -131,11 +126,6 @@ const PromptsPage: React.FC = () => {
             <p className="text-lg text-slate-600">Find inspiration for your next AI masterpiece.</p>
         </div>
         
-        <div className="flex flex-col items-center gap-4 my-8">
-            <div className="hidden md:block"><Ad728x90 /></div>
-            <div className="md:hidden"><Ad320x50 /></div>
-        </div>
-
         <div className="max-w-2xl mx-auto mb-8">
           <SearchBar 
             value={searchTerm}
@@ -172,8 +162,6 @@ const PromptsPage: React.FC = () => {
             ))}
         </div>
         
-        {loading && prompts.length === 0 && <div className="text-center py-10"><Loader className="w-8 h-8 animate-spin text-accent mx-auto" /></div>}
-        
         {error && (
             <div className="text-center py-10 text-red-500 bg-red-50 border border-red-200 rounded-lg p-6 max-w-2xl mx-auto">
             <AlertTriangle className="w-10 h-10 mx-auto mb-4" />
@@ -188,27 +176,30 @@ const PromptsPage: React.FC = () => {
           </div>
         )}
 
-        <motion.div layout className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          <AnimatePresence>
-            {prompts.map(prompt => (
-                <PromptCard key={prompt.id} prompt={prompt} />
-            ))}
-          </AnimatePresence>
-        </motion.div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {loading ? (
+            // Show 6 skeletons for initial load
+            [...Array(6)].map((_, i) => <PromptCardSkeleton key={i} />)
+          ) : (
+            <AnimatePresence>
+              {prompts.map(prompt => (
+                  <PromptCard key={prompt.id} prompt={prompt} />
+              ))}
+            </AnimatePresence>
+          )}
+        </div>
 
         <div className="text-center mt-12">
           {loadingMore ? (
-            <Loader className="w-8 h-8 animate-spin text-accent mx-auto" />
+             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 w-full">
+                 {/* Show 3 more skeletons when loading more */}
+                {[...Array(3)].map((_, i) => <PromptCardSkeleton key={i} />)}
+             </div>
           ) : hasMore && prompts.length > 0 ? (
             <Button onClick={() => fetchPromptsData(false)} variant="outline">
               Load More
             </Button>
           ) : null}
-        </div>
-
-        <div className="flex flex-col items-center gap-4 my-8 pt-8 border-t border-light">
-            <div className="hidden md:block"><Ad468x60 /></div>
-            <div className="md:hidden"><Ad300x250 /></div>
         </div>
 
       </motion.div>

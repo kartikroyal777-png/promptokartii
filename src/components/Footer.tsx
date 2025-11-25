@@ -55,7 +55,7 @@ const Footer: React.FC = () => {
           </div>
         </div>
         <div className="mt-16 pt-8 border-t border-light text-center text-slate-500 text-sm">
-          &copy; {year} OG Prompts. A project by Kartik Kumawat.
+          &copy; {year} OG Prompts. A project by Kartik Kumawat & Akshita.
         </div>
       </div>
     </footer>

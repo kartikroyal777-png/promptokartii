@@ -38,7 +38,7 @@ const TermsPage: React.FC = () => {
             <p>Rajasthan, India. Any dispute will be handled in Jaipur jurisdiction.</p>
 
             <h3>8. Contact</h3>
-            <p>Email: <a href="mailto:kumawatkartikey361@gmail.com">kumawatkartikey361@gmail.com</a> | Owner: Kartik Kumawat</p>
+            <p>Email: <a href="mailto:kumawatkartikey361@gmail.com">kumawatkartikey361@gmail.com</a> | Founders: Kartik Kumawat & Akshita</p>
         </div>
       </motion.div>
     </div>

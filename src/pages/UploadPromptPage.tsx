@@ -7,6 +7,7 @@ import { Loader, UploadCloud, Image as ImageIcon, Check, Link as LinkIcon } from
 import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 import { v4 as uuidv4 } from 'uuid';
+import { compressImage } from '../lib/utils';
 
 const UploadPromptPage: React.FC = () => {
   const navigate = useNavigate();
@@ -17,7 +18,7 @@ const UploadPromptPage: React.FC = () => {
   const [instagramHandle, setInstagramHandle] = useState('');
   const [promptText, setPromptText] = useState('');
   const [instructions, setInstructions] = useState('');
-  const [directLinkUrl, setDirectLinkUrl] = useState(''); // Added direct link state
+  const [directLinkUrl, setDirectLinkUrl] = useState('');
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
 
@@ -56,6 +57,12 @@ const UploadPromptPage: React.FC = () => {
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      // Basic validation for file type
+      if (!file.type.startsWith('image/')) {
+        toast.error('Please upload an image file.');
+        return;
+      }
+      
       setImageFile(file);
       const reader = new FileReader();
       reader.onloadend = () => {
@@ -86,13 +93,27 @@ const UploadPromptPage: React.FC = () => {
       return;
     }
 
-    const toastId = toast.loading('Uploading prompt...');
+    const toastId = toast.loading('Optimizing image & uploading...');
 
     try {
-      const fileName = `${uuidv4()}-${imageFile.name}`;
+      // Auto-compress image to < 200KB
+      // We pass maxWidth 1080 and targetSizeKB 200
+      const compressedImageBlob = await compressImage(imageFile, 1080, 200);
+      
+      // Create a new File object from the blob
+      const compressedFile = new File([compressedImageBlob], imageFile.name.replace(/\.[^/.]+$/, ".jpg"), {
+        type: 'image/jpeg',
+      });
+
+      const fileName = `${uuidv4()}-${compressedFile.name.replace(/[^a-zA-Z0-9.]/g, '')}`;
+      
       const { data: uploadData, error: uploadError } = await supabase.storage
         .from('prompt-images')
-        .upload(fileName, imageFile);
+        .upload(fileName, compressedFile, {
+            cacheControl: '3600',
+            upsert: false,
+            contentType: 'image/jpeg'
+        });
       
       if (uploadError) throw new Error(uploadError.message);
 
@@ -106,11 +127,12 @@ const UploadPromptPage: React.FC = () => {
         instructions: instructions.trim() || null,
         creator_name: creatorName.trim(),
         instagram_handle: instagramHandle.trim() || null,
-        ad_direct_link_url: directLinkUrl.trim() || null, // Save direct link
+        ad_direct_link_url: directLinkUrl.trim() || null,
       };
 
       const { error: insertError } = await supabase.from('prompts').insert([promptData]);
       if (insertError) {
+        // Cleanup image if db insert fails
         await supabase.storage.from('prompt-images').remove([fileName]);
         throw new Error(`Upload failed: ${insertError.message}`);
       }
@@ -119,7 +141,8 @@ const UploadPromptPage: React.FC = () => {
       navigate('/prompts');
 
     } catch (error: any) {
-      toast.error(error.message, { id: toastId });
+      console.error(error);
+      toast.error(error.message || "An error occurred during upload", { id: toastId });
     } finally {
       setFormLoading(false);
     }
@@ -138,11 +161,11 @@ const UploadPromptPage: React.FC = () => {
 
         <form onSubmit={handleSubmit} className="space-y-8">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <input type="text" placeholder="Prompt Title*" value={title} onChange={e => setTitle(e.target.value)} required className="w-full p-3 border border-light rounded-lg"/>
-            <input type="text" placeholder="Your Name (for credit)*" value={creatorName} onChange={e => setCreatorName(e.target.value)} required className="w-full p-3 border border-light rounded-lg"/>
+            <input type="text" placeholder="Prompt Title*" value={title} onChange={e => setTitle(e.target.value)} required className="w-full p-3 border border-light rounded-lg focus:ring-2 focus:ring-accent/50 outline-none transition-all"/>
+            <input type="text" placeholder="Your Name (for credit)*" value={creatorName} onChange={e => setCreatorName(e.target.value)} required className="w-full p-3 border border-light rounded-lg focus:ring-2 focus:ring-accent/50 outline-none transition-all"/>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <input type="text" placeholder="Instagram Handle (e.g., @username)" value={instagramHandle} onChange={e => setInstagramHandle(e.target.value)} className="w-full p-3 border border-light rounded-lg"/>
+            <input type="text" placeholder="Instagram Handle (e.g., @username)" value={instagramHandle} onChange={e => setInstagramHandle(e.target.value)} className="w-full p-3 border border-light rounded-lg focus:ring-2 focus:ring-accent/50 outline-none transition-all"/>
             <div className="relative">
                 <LinkIcon className="absolute left-3 top-3.5 w-5 h-5 text-slate-400" />
                 <input 
@@ -150,7 +173,7 @@ const UploadPromptPage: React.FC = () => {
                     placeholder="Monetization/Direct Link URL (Optional)" 
                     value={directLinkUrl} 
                     onChange={e => setDirectLinkUrl(e.target.value)} 
-                    className="w-full p-3 pl-10 border border-light rounded-lg"
+                    className="w-full p-3 pl-10 border border-light rounded-lg focus:ring-2 focus:ring-accent/50 outline-none transition-all"
                 />
             </div>
           </div>
@@ -159,7 +182,7 @@ const UploadPromptPage: React.FC = () => {
             <label className="block text-sm font-medium text-slate-700 mb-2">Category*</label>
             <div className="p-3 border border-light rounded-lg bg-slate-50">
               {loadingCategories ? (
-                <div className="text-slate-500">Loading categories...</div>
+                <div className="text-slate-500 flex items-center gap-2"><Loader className="w-4 h-4 animate-spin"/> Loading categories...</div>
               ) : categories.length > 0 ? (
                 <div className="flex flex-wrap gap-3">
                   {categories.map(cat => (
@@ -179,15 +202,15 @@ const UploadPromptPage: React.FC = () => {
                   ))}
                 </div>
               ) : (
-                <div className="text-red-500">No categories available to select.</div>
+                <div className="text-red-500">No categories available. Contact admin.</div>
               )}
             </div>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-2">Preview Image*</label>
-            <div className="flex items-center gap-6">
-              <div className="w-32 h-32 aspect-square rounded-lg border-2 border-dashed border-slate-300 flex items-center justify-center bg-slate-50 overflow-hidden">
+            <label className="block text-sm font-medium text-slate-700 mb-2">Preview Image (Auto-compressed)*</label>
+            <div className="flex flex-col sm:flex-row items-center gap-6">
+              <div className="w-32 h-32 flex-shrink-0 aspect-square rounded-lg border-2 border-dashed border-slate-300 flex items-center justify-center bg-slate-50 overflow-hidden">
                 {imagePreview ? (
                   <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
                 ) : (
@@ -197,14 +220,30 @@ const UploadPromptPage: React.FC = () => {
                   </div>
                 )}
               </div>
-              <input type="file" accept="image/*" onChange={handleImageChange} required className="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-accent/20 file:text-accent hover:file:bg-accent/30 cursor-pointer"/>
+              <div className="w-full">
+                  <input 
+                    type="file" 
+                    accept="image/*" 
+                    onChange={handleImageChange} 
+                    required 
+                    className="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-accent/20 file:text-accent hover:file:bg-accent/30 cursor-pointer"
+                  />
+                  <p className="text-xs text-slate-400 mt-2">Image will be automatically optimized to &lt;200KB for fast loading.</p>
+              </div>
             </div>
           </div>
-          <textarea placeholder="Prompt Text*" value={promptText} onChange={e => setPromptText(e.target.value)} required rows={4} className="w-full p-3 border border-light rounded-lg"/>
-          <textarea placeholder="Instructions for use (optional)" value={instructions} onChange={e => setInstructions(e.target.value)} rows={2} className="w-full p-3 border border-light rounded-lg"/>
+          
+          <textarea placeholder="Prompt Text*" value={promptText} onChange={e => setPromptText(e.target.value)} required rows={4} className="w-full p-3 border border-light rounded-lg focus:ring-2 focus:ring-accent/50 outline-none transition-all"/>
+          <textarea placeholder="Instructions for use (optional)" value={instructions} onChange={e => setInstructions(e.target.value)} rows={2} className="w-full p-3 border border-light rounded-lg focus:ring-2 focus:ring-accent/50 outline-none transition-all"/>
+          
           <div className="flex justify-end gap-4">
             <Button type="submit" disabled={isSubmitDisabled}>
-              {formLoading ? <Loader className="animate-spin"/> : 'Upload Prompt'}
+              {formLoading ? (
+                <>
+                    <Loader className="animate-spin w-4 h-4"/> 
+                    <span>Processing...</span>
+                </>
+              ) : 'Upload Prompt'}
             </Button>
           </div>
         </form>

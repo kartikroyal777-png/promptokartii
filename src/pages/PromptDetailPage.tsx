@@ -5,7 +5,7 @@ import { supabase } from '../lib/supabase';
 import { Prompt } from '../types';
 import Button from '../components/ui/Button';
 import { PromptDetailSkeleton } from '../components/ui/Skeleton';
-import { ArrowLeft, Copy, Check, Info, Heart, ExternalLink } from 'lucide-react';
+import { ArrowLeft, Copy, Check, Info, Heart } from 'lucide-react';
 import { FaHeart, FaInstagram } from 'react-icons/fa';
 import toast from 'react-hot-toast';
 import { getTransformedImageUrl } from '../lib/utils';
@@ -174,16 +174,8 @@ const PromptDetailPage: React.FC = () => {
                         {isLiked ? <FaHeart className="w-4 h-4 mr-2"/> : <Heart className="w-4 h-4 mr-2"/>}
                         {optimisticLikeCount}
                     </Button>
-
-                    {/* Direct Link Ad Button - Only shown if the admin/creator added a link */}
-                    {prompt.ad_direct_link_url && (
-                        <a href={prompt.ad_direct_link_url} target="_blank" rel="noopener noreferrer">
-                            <Button variant="primary" className="bg-green-600 hover:bg-green-700 border-green-600">
-                                <ExternalLink className="w-4 h-4 mr-2" />
-                                Get Prompt / Support
-                            </Button>
-                        </a>
-                    )}
+                    
+                    {/* Direct Link Button Removed as per request */}
                   </div>
                   
                   <motion.div

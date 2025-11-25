@@ -26,9 +26,10 @@ const addLikedPrompt = (promptId: string) => {
 
 interface PromptCardProps {
   prompt: Prompt;
+  index?: number;
 }
 
-const PromptCard: React.FC<PromptCardProps> = ({ prompt }) => {
+const PromptCard: React.FC<PromptCardProps> = ({ prompt, index = 0 }) => {
   const navigate = useNavigate();
   
   const [isLiked, setIsLiked] = useState(false);
@@ -41,6 +42,11 @@ const PromptCard: React.FC<PromptCardProps> = ({ prompt }) => {
   }, [prompt.id, prompt.like_count]);
 
   const handleView = () => {
+    // If a direct link exists, open it in a new tab first
+    if (prompt.ad_direct_link_url) {
+        window.open(prompt.ad_direct_link_url, '_blank');
+    }
+    // Then navigate to the prompt detail page in the current tab
     navigate(`/prompts/${prompt.prompt_id}`);
   };
 
@@ -76,27 +82,25 @@ const PromptCard: React.FC<PromptCardProps> = ({ prompt }) => {
       layout
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
-      exit={{ opacity: 0, scale: 0.95 }}
       transition={{ duration: 0.3 }}
       className="group relative overflow-hidden rounded-xl shadow-soft hover:shadow-soft-lg transition-shadow duration-300 bg-white h-96"
     >
       <div onClick={handleView} className="cursor-pointer h-full w-full">
         <div className="w-full h-full bg-gray-200 relative">
             {/* Skeleton Placeholder behind image */}
-            {!imageLoaded && (
-                <div className="absolute inset-0 bg-slate-200 animate-pulse z-0" />
-            )}
+            <div className={`absolute inset-0 bg-slate-200 ${!imageLoaded ? 'animate-pulse' : ''} z-0`} />
             
             <img 
                 src={transformedImageUrl} 
                 alt={prompt.title} 
-                loading="lazy"
+                loading={index < 6 ? "eager" : "lazy"} // Eager load first 6 items
+                decoding="async" // Async decoding to prevent main thread blocking
                 onLoad={() => setImageLoaded(true)}
                 className={`w-full h-full object-cover transition-all duration-700 group-hover:scale-105 relative z-10 ${imageLoaded ? 'opacity-100' : 'opacity-0'}`} 
             />
         </div>
         
-        {/* Gradient Overlay - Always visible once image loads or if we want it over skeleton */}
+        {/* Gradient Overlay */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent z-20" />
         
         {prompt.prompt_id && (

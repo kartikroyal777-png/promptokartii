@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import PromptCard from '../components/PromptCard';
 import { PromptCardSkeleton } from '../components/ui/Skeleton';
 import { supabase } from '../lib/supabase';
 import { Prompt, Category } from '../types';
-import { Loader, AlertTriangle } from 'lucide-react';
+import { AlertTriangle } from 'lucide-react';
 import SearchBar from '../components/ui/SearchBar';
 import Button from '../components/ui/Button';
 
@@ -181,17 +181,16 @@ const PromptsPage: React.FC = () => {
             // Show 6 skeletons for initial load
             [...Array(6)].map((_, i) => <PromptCardSkeleton key={i} />)
           ) : (
-            <AnimatePresence>
-              {prompts.map(prompt => (
-                  <PromptCard key={prompt.id} prompt={prompt} />
-              ))}
-            </AnimatePresence>
+            // Removed AnimatePresence from the list to prevent unmounting/remounting issues during scroll/updates
+            prompts.map((prompt, index) => (
+                <PromptCard key={prompt.id} prompt={prompt} index={index} />
+            ))
           )}
         </div>
 
         <div className="text-center mt-12">
           {loadingMore ? (
-             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 w-full">
+             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 w-full mt-8">
                  {/* Show 3 more skeletons when loading more */}
                 {[...Array(3)].map((_, i) => <PromptCardSkeleton key={i} />)}
              </div>
